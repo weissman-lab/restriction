@@ -5,4 +5,10 @@ Aysola, Lyle H. Ungar, Scott D. Halpern, and Gary E. Weissman.
 
 ## Models
 
+Logistic Regression
+
+Random Forest
+
+Boosted Tree
+
 ## Code
