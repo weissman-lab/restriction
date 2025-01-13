@@ -1,0 +1,4896 @@
+---
+title: "Restriction from Spirometry"
+output: html_document
+date: "2025-01-02"
+---
+
+# Dependencies
+
+```{r}
+
+library (MASS)
+library (tidyverse)
+library (magrittr)
+
+library (caret)
+
+library (glmnet)
+library (ranger)
+library (xgboost)
+
+library (shapr)
+library (modelr)
+library (tidymodels)
+library (rsample)
+
+library (cutpointr)
+library (foreign)
+library (gmish)
+library (MLmetrics)
+library (scales)
+
+library (PropCIs)
+
+library (cowplot)
+library (knitr)
+library (table1)
+
+set.seed (1919)
+
+# Document the version of each library used in this analysis
+sessionInfo()
+
+```
+
+# Functions
+
+```{r}
+
+source ("functions.R")
+
+```
+
+# Data
+
+```{r}
+
+source ("data.R")
+
+```
+
+# Models
+
+```{r}
+
+source ("models.R")
+
+```
+
+# Results
+
+## Abstract
+
+Number of PFTs in development dataset
+
+```{r}
+
+nrow (development)
+
+```
+
+Number of PFTs in validation dataset
+
+```{r}
+
+nrow (validation)
+
+```
+
+Restriction in development dataset
+
+```{r}
+
+development %>% 
+  filter (restrictive == "yes") %>% 
+  nrow ()
+
+development %>% 
+  filter (restrictive == "yes") %>% 
+  nrow () %>% 
+  '/' (nrow (development)) %>% 
+  '*' (100) %>% 
+  round (1)
+
+```
+
+Restriction in validation dataset
+
+```{r}
+
+validation %>%
+  filter (restrictive == "yes") %>%
+  nrow ()
+
+validation %>%
+  filter (restrictive == "yes") %>%
+  nrow () %>%
+  '/' (nrow (validation)) %>% 
+  '*' (100) %>% 
+  round (1)
+
+```
+
+Random forest NPV
+
+```{r}
+
+round (performance_rf$npv * 100, digits = 1)
+round (performance_rf$npv_025 * 100, digits = 1)
+round (performance_rf$npv_975 * 100, digits = 1)
+
+```
+
+ERS/ATS NPV
+
+```{r}
+
+round (performance_ers_ats$npv * 100, digits = 1)
+round (performance_ers_ats$npv_025 * 100, digits = 1)
+round (performance_ers_ats$npv_975 * 100, digits = 1)
+
+```
+
+Random forest NPV in non-Hispanic Black patients
+
+```{r}
+
+round (performance_rf_race_3$npv * 100, digits = 1)
+round (performance_rf_race_3$npv_025 * 100, digits = 1)
+round (performance_rf_race_3$npv_975 * 100, digits = 1)
+
+```
+
+ERS/ATS NPV in non-Hispanic Black patients
+
+```{r}
+
+round (performance_ers_ats_race_3$npv * 100, digits = 1)
+round (performance_ers_ats_race_3$npv_025 * 100, digits = 1)
+round (performance_ers_ats_race_3$npv_975 * 100, digits = 1)
+
+```
+
+Random forest NPV in White patients
+
+```{r}
+
+round (performance_rf_race_4$npv * 100, digits = 1)
+round (performance_rf_race_4$npv_025 * 100, digits = 1)
+round (performance_rf_race_4$npv_975 * 100, digits = 1)
+
+```
+
+ERS/ATS NPV in non-Hispanic White patients
+
+```{r}
+
+round (performance_ers_ats_race_4$npv * 100, digits = 1)
+round (performance_ers_ats_race_4$npv_025 * 100, digits = 1)
+round (performance_ers_ats_race_4$npv_975 * 100, digits = 1)
+
+```
+
+## Results
+
+Number of PFTs in development dataset
+
+```{r}
+
+nrow (development)
+
+```
+
+Number of PFTs in the validation dataset
+
+```{r}
+
+nrow (validation)
+
+```
+
+Median FEV1 z-score in development dataset
+
+```{r}
+
+development %>% 
+  pull (fev1_z_score) %>% 
+  median () %>% 
+  round (1)
+
+```
+
+Median FVC z-score in development dataset
+
+```{r}
+
+development %>% 
+  pull (fvc_z_score) %>% 
+  median () %>% 
+  round (1)
+
+```
+
+Median FEV1 in validation dataset
+
+```{r}
+
+validation %>% 
+  pull (fev1_z_score) %>% 
+  median () %>% 
+  round (1)
+
+```
+
+Median FVC z-score in validation dataset
+
+```{r}
+
+development %>% 
+  pull (fvc_z_score) %>% 
+  median () %>% 
+  round (1)
+
+```
+
+Median TLC z-score in development dataset
+
+```{r}
+
+development %>% 
+  pull (tlc_z_score) %>% 
+  median () %>% 
+  round (1)
+
+```
+
+Median TLC z-score in validation dataset
+
+```{r}
+
+validation %>% 
+  pull (tlc_z_score) %>% 
+  median () %>% 
+  round (1)
+
+```
+
+Prevalence of restriction in the development dataset
+
+```{r}
+
+development %>%
+  filter (restrictive == "yes") %>%
+  nrow () %>%
+  '/' (nrow (development)) %>% 
+  '*' (100) %>% 
+  round (1)
+
+```
+
+Prevalence of restriction in the validation dataset
+
+```{r}
+
+validation %>%
+  filter (restrictive == "yes") %>%
+  nrow () %>%
+  '/' (nrow (validation)) %>% 
+  '*' (100) %>% 
+  round (1)
+
+```
+
+NPV of the ML models applied to the validation dataset
+
+```{r}
+
+round (performance_lr$npv * 100, digits = 1)
+round (performance_rf$npv * 100, digits = 1)
+round (performance_gb$npv * 100, digits = 1)
+
+```
+
+Random forest NPV applied to validation dataset
+
+```{r}
+
+round (performance_rf$npv * 100, digits = 1)
+round (performance_rf$npv_025 * 100, digits = 1)
+round (performance_rf$npv_975 * 100, digits = 1)
+
+```
+
+ERS/ATS NPV applied to validation dataset
+
+```{r}
+
+round (performance_ers_ats$npv * 100, digits = 1)
+round (performance_ers_ats$npv_025 * 100, digits = 1)
+round (performance_ers_ats$npv_975 * 100, digits = 1)
+
+```
+
+Restriction excluded by random forest model in the validation dataset
+
+```{r}
+
+validation %>%
+  add_column (predicted = predict (model_rf, validation, type = 'prob')[,2]) %>% 
+  filter (predicted < cutoff_rf) %>% 
+  nrow ()
+  
+validation %>%
+  add_column (predicted = predict (model_rf, validation, type = 'prob')[,2]) %>% 
+  filter (predicted < cutoff_rf) %>% 
+  nrow () %>% 
+  divide_by (nrow (validation)) %>% 
+  multiply_by (100) %>% 
+  round (digits = 1)
+
+numerator <- validation %>%
+add_column (predicted = predict (model_rf, validation, type = 'prob')[,2]) %>% 
+  filter (predicted < cutoff_rf) %>% 
+  nrow ()
+
+denominator <- nrow (validation)
+
+round (exactci (numerator, denominator, 0.95)$conf.int [[1]] * 100, digits = 1)
+round (exactci (numerator, denominator, 0.95)$conf.int [[2]] * 100, digits = 1)
+
+```
+
+Restriction excluded by normal FVC in the validation dataset
+
+```{r}
+
+validation %>%
+  filter (fvc_z_score > -1.645) %>% 
+  nrow ()
+
+validation %>% 
+  filter (fvc_z_score > -1.645) %>% 
+  nrow () %>% 
+  divide_by (nrow (validation)) %>% 
+  multiply_by (100) %>% 
+  round (digits = 1)
+
+numerator <- validation %>%
+  filter (fvc_z_score > -1.645) %>% 
+  nrow ()
+
+denominator <- nrow (validation)
+
+round (exactci (numerator, denominator, 0.95)$conf.int [[1]] * 100, digits = 1)
+round (exactci (numerator, denominator, 0.95)$conf.int [[2]] * 100, digits = 1)
+
+```
+
+Sensitivity of random forest model in validation dataset
+
+```{r}
+
+round (performance_rf$sensitivity * 100, digits = 1)
+round (performance_rf$sensitivity_025 * 100, digits = 1)
+round (performance_rf$sensitivity_975 * 100, digits = 1)
+
+```
+
+ERS/ATS sensitivity in the validation dataset
+
+```{r}
+
+round (performance_ers_ats$sensitivity * 100, digits = 1)
+round (performance_ers_ats$sensitivity_025 * 100, digits = 1)
+round (performance_ers_ats$sensitivity_975 * 100, digits = 1)
+
+```
+
+Specificity of random forest model in the validation dataset
+
+```{r}
+
+round (performance_rf$specificity * 100, digits = 1)
+round (performance_rf$specificity_025 * 100, digits = 1)
+round (performance_rf$specificity_975 * 100, digits = 1)
+
+```
+
+ERS/ATS specificity in the validation dataset
+
+```{r}
+
+round (performance_ers_ats$specificity * 100, digits = 1)
+round (performance_ers_ats$specificity_025 * 100, digits = 1)
+round (performance_ers_ats$specificity_975 * 100, digits = 1)
+
+```
+
+AUC-ROC of random forest model in the validation dataset
+
+```{r}
+
+round (performance_rf$roc, digits = 2)
+round (performance_rf$roc_025, digits = 2)
+round (performance_rf$roc_975, digits = 2)
+
+```
+
+AUC-PR of random forest model in the validation dataset
+
+```{r}
+
+round (performance_rf$pr, digits = 2)
+round (performance_rf$pr_025, digits = 2)
+round (performance_rf$pr_975, digits = 2)
+
+```
+
+ICI of random forest model in the validation dataset
+
+```{r}
+
+round (performance_rf$ici, digits = 2)
+round (performance_rf$ici_025, digits = 2)
+round (performance_rf$ici_975, digits = 2)
+
+```
+
+SBS of random forest model in the validation dataset
+
+```{r}
+
+round (performance_rf$sbs, digits = 2)
+round (performance_rf$sbs_025, digits = 2)
+round (performance_rf$sbs_975, digits = 2)
+
+```
+
+NPV of FVC LLN among non-Hispanic Black patients
+
+```{r}
+
+round (performance_ers_ats_race_3$npv * 100, digits = 1)
+round (performance_ers_ats_race_3$npv_025 * 100, digits = 1)
+round (performance_ers_ats_race_3$npv_975 * 100, digits = 1)
+
+```
+
+NPV of FVC LLN among non-Hispanic White patients
+
+```{r}
+
+round (performance_ers_ats_race_4$npv * 100, digits = 1)
+round (performance_ers_ats_race_4$npv_025 * 100, digits = 1)
+round (performance_ers_ats_race_4$npv_975 * 100, digits = 1)
+
+```
+
+NPV of random forest model among non-Hispanic Black patients
+
+```{r}
+
+round (performance_rf_race_3$npv * 100, digits = 1)
+round (performance_rf_race_3$npv_025 * 100, digits = 1)
+round (performance_rf_race_3$npv_975 * 100, digits = 1)
+
+```
+
+NPV of random forest model among non-Hispanic White patients
+
+```{r}
+
+round (performance_rf_race_4$npv * 100, digits = 1)
+round (performance_rf_race_4$npv_025 * 100, digits = 1)
+round (performance_rf_race_4$npv_975 * 100, digits = 1)
+
+```
+
+Ratio of lowest to highest NPV with random forest model
+
+```{r}
+
+round (equity_rf * 100, digits = 1)
+round (equity_rf_lower * 100, digits = 1)
+round (equity_rf_upper * 100, digits = 1)
+
+```
+
+Ratio of lowest to highest NPV with ERS/ATS model
+
+```{r}
+
+round (equity_ers_ats * 100, digits = 1)
+round (equity_ers_ats_lower * 100, digits = 1)
+round (equity_ers_ats_upper * 100, digits = 1)
+
+```
+
+NPV of a normal FVC in the interval [-1.645, -1.445)
+
+```{r}
+
+numerator <- validation %>% 
+  filter (fvc_z_score >= -1.645 & fvc_z_score < -1.445) %>% 
+  filter (fvc_z_score >= -1.645 & tlc_z_score >= -1.645) %>% 
+  nrow ()
+
+denominator <- validation %>% 
+  filter (fvc_z_score >= -1.645 & fvc_z_score < -1.445) %>% 
+  filter (fvc_z_score >= -1.645) %>% 
+  nrow ()
+
+
+round (100 * numerator / denominator, digits = 1)
+round (exactci (numerator, denominator, 0.95)$conf.int [[1]] * 100, digits = 1)
+round (exactci (numerator, denominator, 0.95)$conf.int [[2]] * 100, digits = 1)
+
+```
+
+NPV of random forest model in interval [-1.645, -1.445)
+
+```{r}
+
+predicted <- predict (model_rf, validation, type = 'prob')[,2]
+
+numerator <- validation %>%
+  add_column (predicted = predicted) %>% 
+  filter (fvc_z_score >= -1.645 & fvc_z_score < -1.445) %>% 
+  filter (predicted < cutoff_rf & tlc_z_score >= -1.645) %>% 
+  nrow ()
+
+denominator <- validation %>% 
+  add_column (predicted = predicted) %>% 
+  filter (fvc_z_score >= -1.645 & fvc_z_score < -1.445) %>% 
+  filter (predicted < cutoff_rf) %>% 
+  nrow ()
+
+round (100 * numerator / denominator, digits = 1)
+round (exactci (numerator, denominator, 0.95)$conf.int [[1]] * 100, digits = 1)
+round (exactci (numerator, denominator, 0.95)$conf.int [[2]] * 100, digits = 1)
+
+```
+
+NPV of a normal FVC across FVC z-score intervals
+
+```{r}
+
+data <- tibble (
+  fvc_z_score = seq (from = -1.545, to = 0.655, by = 0.200),
+  npv = rep (NA, 12),
+  npv_lower = rep (NA, 12),
+  npv_upper = rep (NA, 12)
+)
+
+for (i in 0:11) {
+
+  lower <- -1.545 + (i * 0.2) - 0.1
+  upper <- -1.445 + (i * 0.2) + 0.1
+  
+  # ERS/ATS
+  
+  numerator <- validation %>% 
+    filter (fvc_z_score >= lower & fvc_z_score < upper) %>% 
+    filter (fvc_z_score > -1.645 & tlc_z_score > -1.645) %>% 
+    nrow ()  
+  
+  denominator <- validation %>% 
+    filter (fvc_z_score >= lower & fvc_z_score < upper) %>%
+    filter (fvc_z_score > -1.645) %>% 
+    nrow ()
+  
+  npv <- numerator / denominator
+  
+  if (is.na (npv) == 0) {
+  
+    npv_lower <- exactci (numerator, denominator, 0.95)$conf.int [[1]]
+    npv_upper <- exactci (numerator, denominator, 0.95)$conf.int [[2]]  
+    
+    data [i + 1, 2] <- npv * 100
+    data [i + 1, 3] <- npv_lower * 100
+    data [i + 1, 4] <- npv_upper * 100
+    
+  }
+ 
+}
+
+print (data)
+
+```
+
+NPV of random forest model across FVC z-score intervals
+
+```{r}
+
+predicted_rf <- predict (model_rf, validation, type = 'prob')[,2]
+
+data <- tibble (
+  fvc_z_score = seq (from = -1.545, to = 0.655, by = 0.200),
+  npv = rep (NA, 12),
+  npv_lower = rep (NA, 12),
+  npv_upper = rep (NA, 12)
+)
+
+for (i in 0:11) {
+
+  lower <- -1.545 + (i * 0.2) - 0.1
+  upper <- -1.445 + (i * 0.2) + 0.1
+  
+  # Random Forest
+  
+  numerator <- validation %>% 
+    add_column (predicted_rf = predicted_rf) %>% 
+    filter (fvc_z_score >= lower & fvc_z_score < upper) %>%
+    filter (predicted_rf < cutoff_rf & tlc_z_score > -1.645) %>% 
+    nrow ()
+  
+  denominator <- validation %>% 
+    add_column (predicted_rf = predicted_rf) %>% 
+    filter (fvc_z_score >= lower & fvc_z_score < upper) %>%
+    filter (predicted_rf < cutoff_rf) %>% 
+    nrow ()  
+  
+  npv <- numerator / denominator
+  npv_lower <- exactci (numerator, denominator, 0.95)$conf.int [[1]]
+  npv_upper <- exactci (numerator, denominator, 0.95)$conf.int [[2]]
+  
+  data [i + 1, 2] <- npv * 100
+  data [i + 1, 3] <- npv_lower * 100
+  data [i + 1, 4] <- npv_upper * 100
+ 
+}
+
+print (data)
+
+
+```
+
+# Tables
+
+## Table 1
+
+```{r message = FALSE, warning = FALSE}
+
+table_1_development <- table1 (~
+  age_group +
+  sex +
+  race +
+  fev1_z_score +
+  fvc_z_score +
+  fev1_z_score +
+  fev1_fvc_z_score +
+  tlc_z_score +
+  interpretation +
+  severity,
+  data = development,
+  render.continuous = c (.="Median (IQR)")
+)
+
+table_1_development
+
+table_1_validation <- table1 (~
+  age_group +
+  sex +
+  race +
+  fev1_z_score +
+  fvc_z_score +
+  fev1_z_score +
+  fev1_fvc_z_score +
+  tlc_z_score +
+  interpretation +
+  severity,
+  data = validation,
+  render.continuous = c (.="Median (IQR)")
+)
+
+table_1_validation
+
+```
+
+## Table 2
+
+```{r}
+
+table_2 <- str_c (
+  "FVC $<$ LLN & ",
+  sprintf ('%.1f', 100 * performance_ers_ats$sensitivity),
+  " (",
+  sprintf ('%.1f', 100 * performance_ers_ats$sensitivity_025),
+  "--",
+  sprintf ('%.1f', 100 * performance_ers_ats$sensitivity_975),
+  ") & ",
+  sprintf ('%.1f', 100 * performance_ers_ats$specificity),
+  " (",
+  sprintf ('%.1f', 100 * performance_ers_ats$specificity_025),
+  "--",
+  sprintf ('%.1f', 100 * performance_ers_ats$specificity_975),
+  ") & ",
+  sprintf ('%.1f', 100 * performance_ers_ats$npv),
+  " (",
+  sprintf ('%.1f', 100 * performance_ers_ats$npv_025),
+  "--",
+  sprintf ('%.1f', 100 * performance_ers_ats$npv_975),
+  ") & ",
+  sprintf ('%.1f', 100 * performance_ers_ats$ppv),
+  " (",
+  sprintf ('%.1f', 100 * performance_ers_ats$ppv_025),
+  "--",
+  sprintf ('%.1f', 100 * performance_ers_ats$ppv_975),  
+  ") & & --- & --- & --- & --- \\\\ \n ",
+  "Logistic Regression & ",
+  sprintf ('%.1f', 100 * performance_lr$sensitivity),
+  " (",
+  sprintf ('%.1f', 100 * performance_lr$sensitivity_025),
+  "--",
+  sprintf ('%.1f', 100 * performance_lr$sensitivity_975),
+  ") & ",
+  sprintf ('%.1f', 100 * performance_lr$specificity),
+  " (",
+  sprintf ('%.1f', 100 * performance_lr$specificity_025),
+  "--",
+  sprintf ('%.1f', 100 * performance_lr$specificity_975),
+  ") & ",
+  sprintf ('%.1f', 100 * performance_lr$npv),
+  " (",
+  sprintf ('%.1f', 100 * performance_lr$npv_025),
+  "--",
+  sprintf ('%.1f', 100 * performance_lr$npv_975),
+  ") & ",
+  sprintf ('%.1f', 100 * performance_lr$ppv),
+  " (",
+  sprintf ('%.1f', 100 * performance_lr$ppv_025),
+  "--",
+  sprintf ('%.1f', 100 * performance_lr$ppv_975),
+  ") & & ",
+  sprintf ('%.2f', performance_lr$roc),
+  " (",
+  sprintf ('%.2f', performance_lr$roc_025),
+  "--",
+  sprintf ('%.2f', performance_lr$roc_975),
+  ") & ",
+  sprintf ('%.2f', performance_lr$pr),
+  " (",
+  sprintf ('%.2f', performance_lr$pr_025),
+  "--",
+  sprintf ('%.2f', performance_lr$pr_975),
+  ") & ",
+  sprintf ('%.2f', performance_lr$ici),
+  " (",
+  sprintf ('%.2f', performance_lr$ici_025),
+  "--",
+  sprintf ('%.2f', performance_lr$ici_975),
+  ") & ",
+  sprintf ('%.2f', performance_lr$sbs),
+  " (",
+  sprintf ('%.2f', performance_lr$sbs_025),
+  "--",
+  sprintf ('%.2f', performance_lr$sbs_975),  
+  ") \\\\ \n ",
+  "Random Forest & ",
+  sprintf ('%.1f', 100 * performance_rf$sensitivity),
+  " (",
+  sprintf ('%.1f', 100 * performance_rf$sensitivity_025),
+  "--",
+  sprintf ('%.1f', 100 * performance_rf$sensitivity_975),
+  ") & ",
+  sprintf ('%.1f', 100 * performance_rf$specificity),
+  " (",
+  sprintf ('%.1f', 100 * performance_rf$specificity_025),
+  "--",
+  sprintf ('%.1f', 100 * performance_rf$specificity_975),
+  ") & ",
+  sprintf ('%.1f', 100 * performance_rf$npv),
+  " (",
+  sprintf ('%.1f', 100 * performance_rf$npv_025),
+  "--",
+  sprintf ('%.1f', 100 * performance_rf$npv_975),
+  ") & ",
+  sprintf ('%.1f', 100 * performance_rf$ppv),
+  " (",
+  sprintf ('%.1f', 100 * performance_rf$ppv_025),
+  "--",
+  sprintf ('%.1f', 100 * performance_rf$ppv_975),
+  ") & & ",
+  sprintf ('%.2f', performance_rf$roc),
+  " (",
+  sprintf ('%.2f', performance_rf$roc_025),
+  "--",
+  sprintf ('%.2f', performance_rf$roc_975),
+  ") & ",
+  sprintf ('%.2f', performance_rf$pr),
+  " (",
+  sprintf ('%.2f', performance_rf$pr_025),
+  "--",
+  sprintf ('%.2f', performance_rf$pr_975),
+  ") & ",
+  sprintf ('%.2f', performance_rf$ici),
+  " (",
+  sprintf ('%.2f', performance_rf$ici_025),
+  "--",
+  sprintf ('%.2f', performance_rf$ici_975),
+  ") & ",
+  sprintf ('%.2f', performance_rf$sbs),
+  " (",
+  sprintf ('%.2f', performance_rf$sbs_025),
+  "--",
+  sprintf ('%.2f', performance_rf$sbs_975),  
+  ") \\\\ \n ",  
+  "Boosted Tree & ",
+  sprintf ('%.1f', 100 * performance_gb$sensitivity),
+  " (",
+  sprintf ('%.1f', 100 * performance_gb$sensitivity_025),
+  "--",
+  sprintf ('%.1f', 100 * performance_gb$sensitivity_975),
+  ") & ",
+  sprintf ('%.1f', 100 * performance_gb$specificity),
+  " (",
+  sprintf ('%.1f', 100 * performance_gb$specificity_025),
+  "--",
+  sprintf ('%.1f', 100 * performance_gb$specificity_975),
+  ") & ",
+  sprintf ('%.1f', 100 * performance_gb$npv),
+  " (",
+  sprintf ('%.1f', 100 * performance_gb$npv_025),
+  "--",
+  sprintf ('%.1f', 100 * performance_gb$npv_975),
+  ") & ",
+  sprintf ('%.1f', 100 * performance_gb$ppv),
+  " (",
+  sprintf ('%.1f', 100 * performance_gb$ppv_025),
+  "--",
+  sprintf ('%.1f', 100 * performance_gb$ppv_975),  
+  ") & & ",
+  sprintf ('%.2f', performance_gb$roc),
+  " (",
+  sprintf ('%.2f', performance_gb$roc_025),
+  "--",
+  sprintf ('%.2f', performance_gb$roc_975),
+  ") & ",
+  sprintf ('%.2f', performance_gb$pr),
+  " (",
+  sprintf ('%.2f', performance_gb$pr_025),
+  "--",
+  sprintf ('%.2f', performance_gb$pr_975),
+  ") & ",
+  sprintf ('%.2f', performance_gb$ici),
+  " (",
+  sprintf ('%.2f', performance_gb$ici_025),
+  "--",
+  sprintf ('%.2f', performance_gb$ici_975),
+  ") & ",
+  sprintf ('%.2f', performance_gb$sbs),
+  " (",
+  sprintf ('%.2f', performance_gb$sbs_025),
+  "--",
+  sprintf ('%.2f', performance_gb$sbs_975),  
+  ") \\\\ \n ",    
+  sep = ""
+)
+
+cat (table_2)
+
+```
+
+## Table 3
+
+```{r}
+
+table_3 <- str_c (
+  "FVC $<$ LLN & & ",
+  sprintf ('%.1f', 100 * performance_ers_ats_race_3$npv),
+  " (",
+  sprintf ('%.1f', 100 * performance_ers_ats_race_3$npv_025),
+  " to ",
+  sprintf ('%.1f', 100 * performance_ers_ats_race_3$npv_975),
+  ") & ",  
+  sprintf ('%.1f', 100 * performance_ers_ats_race_4$npv),
+  " (",
+  sprintf ('%.1f', 100 * performance_ers_ats_race_4$npv_025),
+  " to ",
+  sprintf ('%.1f', 100 * performance_ers_ats_race_4$npv_975),
+  ") & & ",    
+  sprintf ('%.1f', 100 * equity_ers_ats),
+  " (",
+  sprintf ('%.1f', 100 * equity_ers_ats_lower),
+  " to ",
+  sprintf ('%.1f', 100 * equity_ers_ats_upper),
+  ") \\\\ \n ",
+  "Logistic Regression & & ",
+  sprintf ('%.1f', 100 * performance_lr_race_3$npv),
+  " (",
+  sprintf ('%.1f', 100 * performance_lr_race_3$npv_025),
+  " to ",
+  sprintf ('%.1f', 100 * performance_lr_race_3$npv_975),
+  ") & ",  
+  sprintf ('%.1f', 100 * performance_lr_race_4$npv),
+  " (",
+  sprintf ('%.1f', 100 * performance_lr_race_4$npv_025),
+  " to ",
+  sprintf ('%.1f', 100 * performance_lr_race_4$npv_975),
+  ") & & ",    
+  sprintf ('%.1f', 100 * equity_lr),
+  " (",
+  sprintf ('%.1f', 100 * equity_lr_lower),
+  " to ",
+  sprintf ('%.1f', 100 * equity_lr_upper),
+  ") \\\\ \n ",
+  "Random Forest & & ",
+  sprintf ('%.1f', 100 * performance_rf_race_3$npv),
+  " (",
+  sprintf ('%.1f', 100 * performance_rf_race_3$npv_025),
+  " to ",
+  sprintf ('%.1f', 100 * performance_rf_race_3$npv_975),
+  ") & ",  
+  sprintf ('%.1f', 100 * performance_rf_race_4$npv),
+  " (",
+  sprintf ('%.1f', 100 * performance_rf_race_4$npv_025),
+  " to ",
+  sprintf ('%.1f', 100 * performance_rf_race_4$npv_975),
+  ") & & ",    
+  sprintf ('%.1f', 100 * equity_rf),
+  " (",
+  sprintf ('%.1f', 100 * equity_rf_lower),
+  " to ",
+  sprintf ('%.1f', 100 * equity_rf_upper),
+  ") \\\\ \n ",
+  "Boosted Tree & & ",
+  sprintf ('%.1f', 100 * performance_gb_race_3$npv),
+  " (",
+  sprintf ('%.1f', 100 * performance_gb_race_3$npv_025),
+  " to ",
+  sprintf ('%.1f', 100 * performance_gb_race_3$npv_975),
+  ") & ",  
+  sprintf ('%.1f', 100 * performance_gb_race_4$npv),
+  " (",
+  sprintf ('%.1f', 100 * performance_gb_race_4$npv_025),
+  " to ",
+  sprintf ('%.1f', 100 * performance_gb_race_4$npv_975),
+  ") & & ",    
+  sprintf ('%.1f', 100 * equity_gb),
+  " (",
+  sprintf ('%.1f', 100 * equity_gb_lower),
+  " to ",
+  sprintf ('%.1f', 100 * equity_gb_upper),
+  ") \\\\ \n ",    
+  sep = ""
+)
+
+cat (table_3)
+
+```
+
+## Table S1 - TRIPOD+AI Checklist
+
+## Table S2 - Patient Characteristics by Race in the Development Dataset
+
+```{r}
+
+table_S2 <- table1 (~
+  age_group +
+  sex +
+  fev1_z_score +
+  fvc_z_score +
+  fev1_z_score +
+  fev1_fvc_z_score +
+  tlc_z_score +
+  interpretation +
+  severity |
+  race,
+  data = development,
+  render.continuous = c (.="Median (IQR)")
+)
+
+table_S2
+
+```
+
+## Table S3 - Patient Characteristics by Race in the Validation Dataset
+
+```{r}
+
+table_S3 <- table1 (~
+  age_group +
+  sex +
+  fev1_z_score +
+  fvc_z_score +
+  fev1_z_score +
+  fev1_fvc_z_score +
+  tlc_z_score +
+  interpretation +
+  severity |
+  race,
+  data = validation,
+  render.continuous = c (.="Median (IQR)")
+)
+
+table_S3
+
+```
+
+## Table S4 - Model Performance in the Development and Validation Datasets
+
+```{r}
+
+fold <- sample (1:10, nrow (development), replace = TRUE)
+
+data <- development %>% 
+  add_column (fold = fold)
+
+results <- matrix (data = NA, nrow = 10, ncol = 28)
+
+for (i in 1:10) {
+
+  results [i, 1] <- get_sensitivity_ers_ats (filter (data, fold == i))[[1]]
+  results [i, 2] <- get_specificity_ers_ats (filter (data, fold == i))[[1]]
+  results [i, 3] <- get_npv_ers_ats (filter (data, fold == i))[[1]]
+  results [i, 4] <- get_ppv_ers_ats (filter (data, fold == i))[[1]]
+  
+  observed <- data %>% 
+    filter (fold == i) %>% 
+    mutate (restrictive = case_when (
+      restrictive == "yes" ~ 1,
+      restrictive == "no" ~ 0)
+    ) %>% 
+    pull (restrictive)
+    
+  model_lr_fold <- train (
+    regression,
+    data = filter (data, fold != i),
+    method = "glm",
+    family = "binomial"
+  )
+  
+  predicted_lr <- predict (model_lr_fold, filter (data, fold == i), type = 'prob')[,2]
+  
+  results [i, 5] <- get_sensitivity (predicted_lr, observed, cutoff_lr)
+  results [i, 6] <- get_specificity (predicted_lr, observed, cutoff_lr)
+  results [i, 7] <- get_npv (predicted_lr, observed, cutoff_lr)
+  results [i, 8] <- get_ppv (predicted_lr, observed, cutoff_lr)
+  results [i, 9] <- AUC (predicted_lr, observed)
+  results [i, 10] <- PRAUC (predicted_lr, observed)
+  results [i, 11] <- sbrier (predicted_lr, observed)
+  results [i, 12] <- suppressMessages (ici (predicted_lr, observed))
+  
+  model_rf_fold <- train (
+    regression,
+    data = filter (data, fold != i),
+    method = 'ranger',
+    importance = 'impurity',
+    trControl = trainControl(
+      method = "repeatedcv",
+      classProbs = T,
+      savePredictions = T,
+      summaryFunction = twoClassSummary
+    ),
+    tuneGrid = expand.grid (
+      mtry = model_rf$bestTune$mtry,
+      splitrule = model_rf$bestTune$splitrule,
+      min.node.size = model_rf$bestTune$min.node.size
+    )
+  )
+  
+  predicted_rf <- predict (model_rf_fold, filter (data, fold == i), type = 'prob')[,2]
+  
+  results [i, 13] <- get_sensitivity (predicted_rf, observed, cutoff_rf)
+  results [i, 14] <- get_specificity (predicted_rf, observed, cutoff_rf)
+  results [i, 15] <- get_npv (predicted_rf, observed, cutoff_rf)
+  results [i, 16] <- get_ppv (predicted_rf, observed, cutoff_rf)
+  results [i, 17] <- AUC (predicted_rf, observed)
+  results [i, 18] <- PRAUC (predicted_rf, observed)
+  results [i, 19] <- sbrier (predicted_rf, observed)
+  results [i, 20] <- suppressMessages (ici (predicted_rf, observed))  
+  
+  model_gb_fold <- train (
+    regression,
+    data = filter (data, fold != i),
+    method = 'xgbTree',
+    tuneGrid = expand.grid (
+      nrounds = model_gb$bestTune$nrounds,
+      max_depth = model_gb$bestTune$max_depth,
+      eta = model_gb$bestTune$eta,
+      gamma = model_gb$bestTune$gamma,
+      colsample_bytree = model_gb$bestTune$colsample_bytree,
+      min_child_weight = model_gb$bestTune$min_child_weight,
+      subsample = model_gb$bestTune$subsample
+    ),
+    verbose = FALSE,
+    verbosity = 0
+  )
+
+  predicted_gb <- predict (model_gb_fold, filter (data, fold == i), type = 'prob')[,2]
+  
+  results [i, 21] <- get_sensitivity (predicted_gb, observed, cutoff_gb)
+  results [i, 22] <- get_specificity (predicted_gb, observed, cutoff_gb)
+  results [i, 23] <- get_npv (predicted_gb, observed, cutoff_gb)
+  results [i, 24] <- get_ppv (predicted_gb, observed, cutoff_gb)
+  results [i, 25] <- AUC (predicted_gb, observed)
+  results [i, 26] <- PRAUC (predicted_gb, observed)
+  results [i, 27] <- sbrier (predicted_gb, observed)
+  results [i, 28] <- suppressMessages (ici (predicted_gb, observed))    
+  
+}
+
+get_estimate_ci <- function (data) {
+  
+  estimate <- mean (data)
+  
+  lower <- estimate - (sd (data) / sqrt (length (data))) * 1.96
+  upper <- estimate + (sd (data) / sqrt (length (data))) * 1.96
+  
+  result <- str_c (
+    format (round (estimate, 3), nsmall = 3),
+    " (",
+    format (round (lower, 3), nsmall = 3),
+    "--",
+    format (round (upper, 3), nsmall = 3)
+  )
+
+  return (result)
+  
+}
+
+# ERS/ATS
+
+get_estimate_ci (results [, 1])
+get_estimate_ci (results [, 2])
+get_estimate_ci (results [, 3])
+get_estimate_ci (results [, 4])
+
+# Logistic Regression
+
+get_estimate_ci (results [, 5])
+get_estimate_ci (results [, 6])
+get_estimate_ci (results [, 7])
+get_estimate_ci (results [, 8])
+get_estimate_ci (results [, 9])
+get_estimate_ci (results [, 10])
+get_estimate_ci (results [, 11])
+get_estimate_ci (results [, 12])
+
+# Random Forest
+
+get_estimate_ci (results [, 13])
+get_estimate_ci (results [, 14])
+get_estimate_ci (results [, 15])
+get_estimate_ci (results [, 16])
+get_estimate_ci (results [, 17])
+get_estimate_ci (results [, 18])
+get_estimate_ci (results [, 19])
+get_estimate_ci (results [, 20])
+
+# Boosted Tree
+
+get_estimate_ci (results [, 21])
+get_estimate_ci (results [, 22])
+get_estimate_ci (results [, 23])
+get_estimate_ci (results [, 24])
+get_estimate_ci (results [, 25])
+get_estimate_ci (results [, 26])
+get_estimate_ci (results [, 27])
+get_estimate_ci (results [, 28])
+
+table_S4 <- str_c (
+  "\\multirow{4}{*}{FVC $<$ LLN} & Sensitivity & ",
+  sprintf ('%.3f', performance_ers_ats_development$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_development$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_development$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats$sensitivity_975),
+  ") \\\\ \n ",
+  "& Specificity & ",
+  sprintf ('%.3f', performance_ers_ats_development$specificity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_development$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_development$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats$specificity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats$specificity_975),
+  ") \\\\ \n ",
+  "& NPV & ",
+  sprintf ('%.3f', performance_ers_ats_development$npv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_development$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_development$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats$npv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats$npv_975),
+  ") \\\\ \n ",
+  "& PPV & ",
+  sprintf ('%.3f', performance_ers_ats_development$ppv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_development$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_development$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats$ppv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats$ppv_975),
+  ") \\\\ \n \\midrule \n",
+  "\\multirow{8}{*}{Logistic Regression} & Sensitivity & ",
+  sprintf ('%.3f', performance_lr_development$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_lr_development$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_development$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_lr$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr$sensitivity_975),
+  ") \\\\ \n ",
+  "& Specificity & ",
+  sprintf ('%.3f', performance_lr_development$specificity),
+  " (",
+  sprintf ('%.3f', performance_lr_development$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_development$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr$specificity),
+  " (",
+  sprintf ('%.3f', performance_lr$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr$specificity_975),
+  ") \\\\ \n ",
+  "& NPV & ",
+  sprintf ('%.3f', performance_lr_development$npv),
+  " (",
+  sprintf ('%.3f', performance_lr_development$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_development$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr$npv),
+  " (",
+  sprintf ('%.3f', performance_lr$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr$npv_975),
+  ") \\\\ \n ",
+  "& PPV & ",
+  sprintf ('%.3f', performance_lr_development$ppv),
+  " (",
+  sprintf ('%.3f', performance_lr_development$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_development$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr$ppv),
+  " (",
+  sprintf ('%.3f', performance_lr$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr$ppv_975),
+  ") \\\\ \n ",
+  "& AUC-ROC & ",
+  sprintf ('%.3f', performance_lr_development$roc),
+  " (",
+  sprintf ('%.3f', performance_lr_development$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_development$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr$roc),
+  " (",
+  sprintf ('%.3f', performance_lr$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_lr$roc_975),
+  ") \\\\ \n ",
+  "& AUC-PR & ",
+  sprintf ('%.3f', performance_lr_development$pr),
+  " (",
+  sprintf ('%.3f', performance_lr_development$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_development$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr$pr),
+  " (",
+  sprintf ('%.3f', performance_lr$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_lr$pr_975),
+  ") \\\\ \n ",
+  "& ICI & ",
+  sprintf ('%.3f', performance_lr_development$ici),
+  " (",
+  sprintf ('%.3f', performance_lr_development$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_development$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr$ici),
+  " (",
+  sprintf ('%.3f', performance_lr$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_lr$ici_975),
+  ") \\\\ \n ",
+  "& SBS & ",
+  sprintf ('%.3f', performance_lr_development$sbs),
+  " (",
+  sprintf ('%.3f', performance_lr_development$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_development$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr$sbs),
+  " (",
+  sprintf ('%.3f', performance_lr$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_lr$sbs_975),
+  ") \\\\ \n \\midrule \n",
+  "\\multirow{8}{*}{Random Forest} & Sensitivity & ",
+  sprintf ('%.3f', performance_rf_development$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_rf_development$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_development$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_rf$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf$sensitivity_975),
+  ") \\\\ \n ",
+  "& Specificity & ",
+  sprintf ('%.3f', performance_rf_development$specificity),
+  " (",
+  sprintf ('%.3f', performance_rf_development$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_development$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf$specificity),
+  " (",
+  sprintf ('%.3f', performance_rf$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf$specificity_975),
+  ") \\\\ \n ",
+  "& NPV & ",
+  sprintf ('%.3f', performance_rf_development$npv),
+  " (",
+  sprintf ('%.3f', performance_rf_development$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_development$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf$npv),
+  " (",
+  sprintf ('%.3f', performance_rf$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf$npv_975),
+  ") \\\\ \n ",
+  "& PPV & ",
+  sprintf ('%.3f', performance_rf_development$ppv),
+  " (",
+  sprintf ('%.3f', performance_rf_development$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_development$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf$ppv),
+  " (",
+  sprintf ('%.3f', performance_rf$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf$ppv_975),
+  ") \\\\ \n ",
+  "& AUC-ROC & ",
+  sprintf ('%.3f', performance_rf_development$roc),
+  " (",
+  sprintf ('%.3f', performance_rf_development$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_development$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf$roc),
+  " (",
+  sprintf ('%.3f', performance_rf$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_rf$roc_975),
+  ") \\\\ \n ",
+  "& AUC-PR & ",
+  sprintf ('%.3f', performance_rf_development$pr),
+  " (",
+  sprintf ('%.3f', performance_rf_development$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_development$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf$pr),
+  " (",
+  sprintf ('%.3f', performance_rf$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_rf$pr_975),
+  ") \\\\ \n ",
+  "& ICI & ",
+  sprintf ('%.3f', performance_rf_development$ici),
+  " (",
+  sprintf ('%.3f', performance_rf_development$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_development$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf$ici),
+  " (",
+  sprintf ('%.3f', performance_rf$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_rf$ici_975),
+  ") \\\\ \n ",
+  "& SBS & ",
+  sprintf ('%.3f', performance_rf_development$sbs),
+  " (",
+  sprintf ('%.3f', performance_rf_development$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_development$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf$sbs),
+  " (",
+  sprintf ('%.3f', performance_rf$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_rf$sbs_975),
+  ") \\\\ \n \\midrule \n",  
+  "\\multirow{8}{*}{Tree Boosted} & Sensitivity & ",
+  sprintf ('%.3f', performance_gb_development$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_gb_development$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_development$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_gb$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb$sensitivity_975),
+  ") \\\\ \n ",
+  "& Specificity & ",
+  sprintf ('%.3f', performance_gb_development$specificity),
+  " (",
+  sprintf ('%.3f', performance_gb_development$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_development$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb$specificity),
+  " (",
+  sprintf ('%.3f', performance_gb$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb$specificity_975),
+  ") \\\\ \n ",
+  "& NPV & ",
+  sprintf ('%.3f', performance_gb_development$npv),
+  " (",
+  sprintf ('%.3f', performance_gb_development$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_development$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb$npv),
+  " (",
+  sprintf ('%.3f', performance_gb$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb$npv_975),
+  ") \\\\ \n ",
+  "& PPV & ",
+  sprintf ('%.3f', performance_gb_development$ppv),
+  " (",
+  sprintf ('%.3f', performance_gb_development$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_development$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb$ppv),
+  " (",
+  sprintf ('%.3f', performance_gb$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb$ppv_975),
+  ") \\\\ \n ",
+  "& AUC-ROC & ",
+  sprintf ('%.3f', performance_gb_development$roc),
+  " (",
+  sprintf ('%.3f', performance_gb_development$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_development$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb$roc),
+  " (",
+  sprintf ('%.3f', performance_gb$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_gb$roc_975),
+  ") \\\\ \n ",
+  "& AUC-PR & ",
+  sprintf ('%.3f', performance_gb_development$pr),
+  " (",
+  sprintf ('%.3f', performance_gb_development$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_development$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb$pr),
+  " (",
+  sprintf ('%.3f', performance_gb$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_gb$pr_975),
+  ") \\\\ \n ",
+  "& ICI & ",
+  sprintf ('%.3f', performance_gb_development$ici),
+  " (",
+  sprintf ('%.3f', performance_gb_development$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_development$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb$ici),
+  " (",
+  sprintf ('%.3f', performance_gb$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_gb$ici_975),
+  ") \\\\ \n ",
+  "& SBS & ",
+  sprintf ('%.3f', performance_gb_development$sbs),
+  " (",
+  sprintf ('%.3f', performance_gb_development$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_development$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb$sbs),
+  " (",
+  sprintf ('%.3f', performance_gb$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_gb$sbs_975),
+  ") \\\\ \n ",    
+  sep = ""
+)
+
+cat (table_S4)
+
+```
+
+## Table S5 - Model Performance by Race and Ethnicity
+
+```{r}
+
+table_S5 <- str_c (
+  
+  "\\multirow{4}{*}{FVC $<$ LLN} & Sensitivity & ",
+  sprintf ('%.3f', performance_ers_ats_race_1$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_race_1$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_race_1$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_race_2$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_race_2$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_race_2$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_race_3$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_race_3$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_race_3$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_race_4$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_race_3$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_race_4$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_race_5$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_race_5$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_race_5$sensitivity_975),   
+  ") \\\\ \n ",
+  "& Specificity & ",
+  sprintf ('%.3f', performance_ers_ats_race_1$specificity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_race_1$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_race_1$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_race_2$specificity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_race_2$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_race_2$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_race_3$specificity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_race_3$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_race_3$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_race_4$specificity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_race_3$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_race_4$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_race_5$specificity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_race_5$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_race_5$specificity_975),   
+  ") \\\\ \n ",
+  "& NPV & ",
+  sprintf ('%.3f', performance_ers_ats_race_1$npv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_race_1$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_race_1$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_race_2$npv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_race_2$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_race_2$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_race_3$npv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_race_3$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_race_3$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_race_4$npv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_race_3$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_race_4$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_race_5$npv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_race_5$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_race_5$npv_975),   
+  ") \\\\ \n ",  
+  "& PPV & ",
+  sprintf ('%.3f', performance_ers_ats_race_1$ppv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_race_1$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_race_1$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_race_2$ppv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_race_2$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_race_2$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_race_3$ppv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_race_3$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_race_3$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_race_4$ppv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_race_3$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_race_4$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_race_5$ppv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_race_5$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_race_5$ppv_975),   
+  ") \\\\ \n ",
+  "\\midrule \n",
+  "\\multirow{8}{*}{Logistic Regression} & Sensitivity & ",
+  sprintf ('%.3f', performance_lr_race_1$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_lr_race_1$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_1$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_2$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_lr_race_2$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_2$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_3$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_lr_race_3$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_3$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_4$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_lr_race_3$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_4$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_5$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_lr_race_5$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_5$sensitivity_975),   
+  ") \\\\ \n ",
+  "& Specificity & ",
+  sprintf ('%.3f', performance_lr_race_1$specificity),
+  " (",
+  sprintf ('%.3f', performance_lr_race_1$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_1$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_2$specificity),
+  " (",
+  sprintf ('%.3f', performance_lr_race_2$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_2$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_3$specificity),
+  " (",
+  sprintf ('%.3f', performance_lr_race_3$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_3$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_4$specificity),
+  " (",
+  sprintf ('%.3f', performance_lr_race_3$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_4$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_5$specificity),
+  " (",
+  sprintf ('%.3f', performance_lr_race_5$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_5$specificity_975),   
+  ") \\\\ \n ",
+  "& NPV & ",
+  sprintf ('%.3f', performance_lr_race_1$npv),
+  " (",
+  sprintf ('%.3f', performance_lr_race_1$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_1$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_2$npv),
+  " (",
+  sprintf ('%.3f', performance_lr_race_2$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_2$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_3$npv),
+  " (",
+  sprintf ('%.3f', performance_lr_race_3$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_3$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_4$npv),
+  " (",
+  sprintf ('%.3f', performance_lr_race_3$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_4$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_5$npv),
+  " (",
+  sprintf ('%.3f', performance_lr_race_5$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_5$npv_975),   
+  ") \\\\ \n ",  
+  "& PPV & ",
+  sprintf ('%.3f', performance_lr_race_1$ppv),
+  " (",
+  sprintf ('%.3f', performance_lr_race_1$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_1$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_2$ppv),
+  " (",
+  sprintf ('%.3f', performance_lr_race_2$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_2$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_3$ppv),
+  " (",
+  sprintf ('%.3f', performance_lr_race_3$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_3$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_4$ppv),
+  " (",
+  sprintf ('%.3f', performance_lr_race_3$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_4$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_5$ppv),
+  " (",
+  sprintf ('%.3f', performance_lr_race_5$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_5$ppv_975),   
+  ") \\\\ \n ",
+  "& AUC-ROC & ",
+  sprintf ('%.3f', performance_lr_race_1$roc),
+  " (",
+  sprintf ('%.3f', performance_lr_race_1$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_1$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_2$roc),
+  " (",
+  sprintf ('%.3f', performance_lr_race_2$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_2$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_3$roc),
+  " (",
+  sprintf ('%.3f', performance_lr_race_3$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_3$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_4$roc),
+  " (",
+  sprintf ('%.3f', performance_lr_race_3$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_4$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_5$roc),
+  " (",
+  sprintf ('%.3f', performance_lr_race_5$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_5$roc_975),   
+  ") \\\\ \n ", 
+  "& AUC-PR & ",
+  sprintf ('%.3f', performance_lr_race_1$pr),
+  " (",
+  sprintf ('%.3f', performance_lr_race_1$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_1$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_2$pr),
+  " (",
+  sprintf ('%.3f', performance_lr_race_2$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_2$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_3$pr),
+  " (",
+  sprintf ('%.3f', performance_lr_race_3$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_3$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_4$pr),
+  " (",
+  sprintf ('%.3f', performance_lr_race_3$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_4$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_5$pr),
+  " (",
+  sprintf ('%.3f', performance_lr_race_5$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_5$pr_975),   
+  ") \\\\ \n ",
+  "& ICI & ",
+  sprintf ('%.3f', performance_lr_race_1$ici),
+  " (",
+  sprintf ('%.3f', performance_lr_race_1$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_1$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_2$ici),
+  " (",
+  sprintf ('%.3f', performance_lr_race_2$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_2$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_3$ici),
+  " (",
+  sprintf ('%.3f', performance_lr_race_3$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_3$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_4$ici),
+  " (",
+  sprintf ('%.3f', performance_lr_race_3$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_4$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_5$ici),
+  " (",
+  sprintf ('%.3f', performance_lr_race_5$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_5$ici_975),   
+  ") \\\\ \n ",  
+  "& SBS & ",
+  sprintf ('%.3f', performance_lr_race_1$sbs),
+  " (",
+  sprintf ('%.3f', performance_lr_race_1$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_1$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_2$sbs),
+  " (",
+  sprintf ('%.3f', performance_lr_race_2$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_2$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_3$sbs),
+  " (",
+  sprintf ('%.3f', performance_lr_race_3$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_3$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_4$sbs),
+  " (",
+  sprintf ('%.3f', performance_lr_race_3$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_4$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_race_5$sbs),
+  " (",
+  sprintf ('%.3f', performance_lr_race_5$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_race_5$sbs_975),   
+  ") \\\\ \n ",
+  "\\midrule \n",
+  "\\multirow{8}{*}{Random Forest} & Sensitivity & ",
+  sprintf ('%.3f', performance_rf_race_1$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_rf_race_1$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_1$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_2$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_rf_race_2$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_2$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_3$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_rf_race_3$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_3$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_4$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_rf_race_3$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_4$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_5$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_rf_race_5$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_5$sensitivity_975),   
+  ") \\\\ \n ",
+  "& Specificity & ",
+  sprintf ('%.3f', performance_rf_race_1$specificity),
+  " (",
+  sprintf ('%.3f', performance_rf_race_1$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_1$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_2$specificity),
+  " (",
+  sprintf ('%.3f', performance_rf_race_2$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_2$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_3$specificity),
+  " (",
+  sprintf ('%.3f', performance_rf_race_3$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_3$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_4$specificity),
+  " (",
+  sprintf ('%.3f', performance_rf_race_3$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_4$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_5$specificity),
+  " (",
+  sprintf ('%.3f', performance_rf_race_5$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_5$specificity_975),   
+  ") \\\\ \n ",
+  "& NPV & ",
+  sprintf ('%.3f', performance_rf_race_1$npv),
+  " (",
+  sprintf ('%.3f', performance_rf_race_1$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_1$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_2$npv),
+  " (",
+  sprintf ('%.3f', performance_rf_race_2$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_2$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_3$npv),
+  " (",
+  sprintf ('%.3f', performance_rf_race_3$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_3$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_4$npv),
+  " (",
+  sprintf ('%.3f', performance_rf_race_3$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_4$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_5$npv),
+  " (",
+  sprintf ('%.3f', performance_rf_race_5$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_5$npv_975),   
+  ") \\\\ \n ",  
+  "& PPV & ",
+  sprintf ('%.3f', performance_rf_race_1$ppv),
+  " (",
+  sprintf ('%.3f', performance_rf_race_1$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_1$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_2$ppv),
+  " (",
+  sprintf ('%.3f', performance_rf_race_2$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_2$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_3$ppv),
+  " (",
+  sprintf ('%.3f', performance_rf_race_3$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_3$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_4$ppv),
+  " (",
+  sprintf ('%.3f', performance_rf_race_3$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_4$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_5$ppv),
+  " (",
+  sprintf ('%.3f', performance_rf_race_5$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_5$ppv_975),   
+  ") \\\\ \n ",
+  "& AUC-ROC & ",
+  sprintf ('%.3f', performance_rf_race_1$roc),
+  " (",
+  sprintf ('%.3f', performance_rf_race_1$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_1$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_2$roc),
+  " (",
+  sprintf ('%.3f', performance_rf_race_2$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_2$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_3$roc),
+  " (",
+  sprintf ('%.3f', performance_rf_race_3$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_3$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_4$roc),
+  " (",
+  sprintf ('%.3f', performance_rf_race_3$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_4$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_5$roc),
+  " (",
+  sprintf ('%.3f', performance_rf_race_5$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_5$roc_975),   
+  ") \\\\ \n ", 
+  "& AUC-PR & ",
+  sprintf ('%.3f', performance_rf_race_1$pr),
+  " (",
+  sprintf ('%.3f', performance_rf_race_1$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_1$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_2$pr),
+  " (",
+  sprintf ('%.3f', performance_rf_race_2$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_2$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_3$pr),
+  " (",
+  sprintf ('%.3f', performance_rf_race_3$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_3$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_4$pr),
+  " (",
+  sprintf ('%.3f', performance_rf_race_3$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_4$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_5$pr),
+  " (",
+  sprintf ('%.3f', performance_rf_race_5$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_5$pr_975),   
+  ") \\\\ \n ",
+  "& ICI & ",
+  sprintf ('%.3f', performance_rf_race_1$ici),
+  " (",
+  sprintf ('%.3f', performance_rf_race_1$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_1$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_2$ici),
+  " (",
+  sprintf ('%.3f', performance_rf_race_2$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_2$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_3$ici),
+  " (",
+  sprintf ('%.3f', performance_rf_race_3$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_3$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_4$ici),
+  " (",
+  sprintf ('%.3f', performance_rf_race_3$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_4$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_5$ici),
+  " (",
+  sprintf ('%.3f', performance_rf_race_5$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_5$ici_975),   
+  ") \\\\ \n ",  
+  "& SBS & ",
+  sprintf ('%.3f', performance_rf_race_1$sbs),
+  " (",
+  sprintf ('%.3f', performance_rf_race_1$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_1$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_2$sbs),
+  " (",
+  sprintf ('%.3f', performance_rf_race_2$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_2$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_3$sbs),
+  " (",
+  sprintf ('%.3f', performance_rf_race_3$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_3$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_4$sbs),
+  " (",
+  sprintf ('%.3f', performance_rf_race_3$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_4$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_race_5$sbs),
+  " (",
+  sprintf ('%.3f', performance_rf_race_5$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_race_5$sbs_975),   
+  ") \\\\ \n ",
+  "\\midrule \n",
+  "\\multirow{8}{*}{Boosted Tree} & Sensitivity & ",
+  sprintf ('%.3f', performance_gb_race_1$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_gb_race_1$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_1$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_2$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_gb_race_2$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_2$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_3$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_gb_race_3$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_3$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_4$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_gb_race_3$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_4$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_5$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_gb_race_5$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_5$sensitivity_975),   
+  ") \\\\ \n ",
+  "& Specificity & ",
+  sprintf ('%.3f', performance_gb_race_1$specificity),
+  " (",
+  sprintf ('%.3f', performance_gb_race_1$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_1$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_2$specificity),
+  " (",
+  sprintf ('%.3f', performance_gb_race_2$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_2$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_3$specificity),
+  " (",
+  sprintf ('%.3f', performance_gb_race_3$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_3$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_4$specificity),
+  " (",
+  sprintf ('%.3f', performance_gb_race_3$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_4$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_5$specificity),
+  " (",
+  sprintf ('%.3f', performance_gb_race_5$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_5$specificity_975),   
+  ") \\\\ \n ",
+  "& NPV & ",
+  sprintf ('%.3f', performance_gb_race_1$npv),
+  " (",
+  sprintf ('%.3f', performance_gb_race_1$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_1$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_2$npv),
+  " (",
+  sprintf ('%.3f', performance_gb_race_2$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_2$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_3$npv),
+  " (",
+  sprintf ('%.3f', performance_gb_race_3$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_3$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_4$npv),
+  " (",
+  sprintf ('%.3f', performance_gb_race_3$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_4$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_5$npv),
+  " (",
+  sprintf ('%.3f', performance_gb_race_5$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_5$npv_975),   
+  ") \\\\ \n ",  
+  "& PPV & ",
+  sprintf ('%.3f', performance_gb_race_1$ppv),
+  " (",
+  sprintf ('%.3f', performance_gb_race_1$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_1$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_2$ppv),
+  " (",
+  sprintf ('%.3f', performance_gb_race_2$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_2$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_3$ppv),
+  " (",
+  sprintf ('%.3f', performance_gb_race_3$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_3$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_4$ppv),
+  " (",
+  sprintf ('%.3f', performance_gb_race_3$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_4$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_5$ppv),
+  " (",
+  sprintf ('%.3f', performance_gb_race_5$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_5$ppv_975),   
+  ") \\\\ \n ",
+  "& AUC-ROC & ",
+  sprintf ('%.3f', performance_gb_race_1$roc),
+  " (",
+  sprintf ('%.3f', performance_gb_race_1$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_1$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_2$roc),
+  " (",
+  sprintf ('%.3f', performance_gb_race_2$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_2$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_3$roc),
+  " (",
+  sprintf ('%.3f', performance_gb_race_3$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_3$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_4$roc),
+  " (",
+  sprintf ('%.3f', performance_gb_race_3$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_4$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_5$roc),
+  " (",
+  sprintf ('%.3f', performance_gb_race_5$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_5$roc_975),   
+  ") \\\\ \n ", 
+  "& AUC-PR & ",
+  sprintf ('%.3f', performance_gb_race_1$pr),
+  " (",
+  sprintf ('%.3f', performance_gb_race_1$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_1$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_2$pr),
+  " (",
+  sprintf ('%.3f', performance_gb_race_2$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_2$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_3$pr),
+  " (",
+  sprintf ('%.3f', performance_gb_race_3$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_3$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_4$pr),
+  " (",
+  sprintf ('%.3f', performance_gb_race_3$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_4$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_5$pr),
+  " (",
+  sprintf ('%.3f', performance_gb_race_5$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_5$pr_975),   
+  ") \\\\ \n ",
+  "& ICI & ",
+  sprintf ('%.3f', performance_gb_race_1$ici),
+  " (",
+  sprintf ('%.3f', performance_gb_race_1$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_1$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_2$ici),
+  " (",
+  sprintf ('%.3f', performance_gb_race_2$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_2$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_3$ici),
+  " (",
+  sprintf ('%.3f', performance_gb_race_3$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_3$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_4$ici),
+  " (",
+  sprintf ('%.3f', performance_gb_race_3$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_4$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_5$ici),
+  " (",
+  sprintf ('%.3f', performance_gb_race_5$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_5$ici_975),   
+  ") \\\\ \n ",  
+  "& SBS & ",
+  sprintf ('%.3f', performance_gb_race_1$sbs),
+  " (",
+  sprintf ('%.3f', performance_gb_race_1$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_1$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_2$sbs),
+  " (",
+  sprintf ('%.3f', performance_gb_race_2$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_2$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_3$sbs),
+  " (",
+  sprintf ('%.3f', performance_gb_race_3$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_3$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_4$sbs),
+  " (",
+  sprintf ('%.3f', performance_gb_race_3$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_4$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_race_5$sbs),
+  " (",
+  sprintf ('%.3f', performance_gb_race_5$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_race_5$sbs_975),   
+  ") \\\\ \n ",  
+  sep = ""
+)
+
+cat (table_S5)
+
+```
+
+## Table S6 - Performance by age
+
+```{r}
+
+table_S6 <- str_c (
+
+  "\\multirow{4}{*}{FVC $<$ LLN} & Sensitivity & ",
+  sprintf ('%.3f', performance_ers_ats_age_1$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_age_1$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_age_1$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_age_2$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_age_2$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_age_2$sensitivity_975),
+  ") \\\\ \n ",
+  "& Specificity & ",
+  sprintf ('%.3f', performance_ers_ats_age_1$specificity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_age_1$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_age_1$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_age_2$specificity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_age_2$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_age_2$specificity_975),
+  ") \\\\ \n ",
+  "& NPV & ",
+  sprintf ('%.3f', performance_ers_ats_age_1$npv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_age_1$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_age_1$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_age_2$npv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_age_2$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_age_2$npv_975),
+  ") \\\\ \n ",
+  "& PPV & ",
+  sprintf ('%.3f', performance_ers_ats_age_1$ppv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_age_1$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_age_1$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_age_2$ppv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_age_2$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_age_2$ppv_975),
+  ") \\\\ \n ",
+  "\\midrule \n",
+  "\\multirow{8}{*}{Logistic Regression} & Sensitivity & ",
+  sprintf ('%.3f', performance_lr_age_1$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_lr_age_1$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_age_1$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_age_2$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_lr_age_2$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_age_2$sensitivity_975),
+  ") \\\\ \n ",
+  "& Specificity & ",
+  sprintf ('%.3f', performance_lr_age_1$specificity),
+  " (",
+  sprintf ('%.3f', performance_lr_age_1$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_age_1$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_age_2$specificity),
+  " (",
+  sprintf ('%.3f', performance_lr_age_2$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_age_2$specificity_975),
+  ") \\\\ \n ",
+  "& NPV & ",
+  sprintf ('%.3f', performance_lr_age_1$npv),
+  " (",
+  sprintf ('%.3f', performance_lr_age_1$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_age_1$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_age_2$npv),
+  " (",
+  sprintf ('%.3f', performance_lr_age_2$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_age_2$npv_975),
+  ") \\\\ \n ",
+  "& PPV & ",
+  sprintf ('%.3f', performance_lr_age_1$ppv),
+  " (",
+  sprintf ('%.3f', performance_lr_age_1$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_age_1$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_age_2$ppv),
+  " (",
+  sprintf ('%.3f', performance_lr_age_2$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_age_2$ppv_975),
+  ") \\\\ \n ",
+  "& AUC-ROC & ",
+  sprintf ('%.3f', performance_lr_age_1$roc),
+  " (",
+  sprintf ('%.3f', performance_lr_age_1$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_age_1$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_age_2$roc),
+  " (",
+  sprintf ('%.3f', performance_lr_age_2$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_age_2$roc_975),
+  ") \\\\ \n ",
+  "& AUC-PR & ",
+  sprintf ('%.3f', performance_lr_age_1$pr),
+  " (",
+  sprintf ('%.3f', performance_lr_age_1$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_age_1$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_age_2$pr),
+  " (",
+  sprintf ('%.3f', performance_lr_age_2$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_age_2$pr_975),
+  ") \\\\ \n ",
+  "& ICI & ",
+  sprintf ('%.3f', performance_lr_age_1$ici),
+  " (",
+  sprintf ('%.3f', performance_lr_age_1$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_age_1$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_age_2$ici),
+  " (",
+  sprintf ('%.3f', performance_lr_age_2$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_age_2$ici_975),
+  ") \\\\ \n ",
+  "& SBS & ",
+  sprintf ('%.3f', performance_lr_age_1$sbs),
+  " (",
+  sprintf ('%.3f', performance_lr_age_1$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_age_1$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_age_2$sbs),
+  " (",
+  sprintf ('%.3f', performance_lr_age_2$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_age_2$sbs_975),
+  ") \\\\ \n ",
+  "\\midrule \n",
+  "\\multirow{8}{*}{Random Forest} & Sensitivity & ",
+  sprintf ('%.3f', performance_rf_age_1$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_rf_age_1$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_age_1$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_age_2$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_rf_age_2$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_age_2$sensitivity_975),
+  ") \\\\ \n ",
+  "& Specificity & ",
+  sprintf ('%.3f', performance_rf_age_1$specificity),
+  " (",
+  sprintf ('%.3f', performance_rf_age_1$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_age_1$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_age_2$specificity),
+  " (",
+  sprintf ('%.3f', performance_rf_age_2$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_age_2$specificity_975),
+  ") \\\\ \n ",
+  "& NPV & ",
+  sprintf ('%.3f', performance_rf_age_1$npv),
+  " (",
+  sprintf ('%.3f', performance_rf_age_1$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_age_1$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_age_2$npv),
+  " (",
+  sprintf ('%.3f', performance_rf_age_2$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_age_2$npv_975),
+  ") \\\\ \n ",
+  "& PPV & ",
+  sprintf ('%.3f', performance_rf_age_1$ppv),
+  " (",
+  sprintf ('%.3f', performance_rf_age_1$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_age_1$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_age_2$ppv),
+  " (",
+  sprintf ('%.3f', performance_rf_age_2$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_age_2$ppv_975),
+  ") \\\\ \n ",
+  "& AUC-ROC & ",
+  sprintf ('%.3f', performance_rf_age_1$roc),
+  " (",
+  sprintf ('%.3f', performance_rf_age_1$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_age_1$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_age_2$roc),
+  " (",
+  sprintf ('%.3f', performance_rf_age_2$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_age_2$roc_975),
+  ") \\\\ \n ",
+  "& AUC-PR & ",
+  sprintf ('%.3f', performance_rf_age_1$pr),
+  " (",
+  sprintf ('%.3f', performance_rf_age_1$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_age_1$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_age_2$pr),
+  " (",
+  sprintf ('%.3f', performance_rf_age_2$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_age_2$pr_975),
+  ") \\\\ \n ",
+  "& ICI & ",
+  sprintf ('%.3f', performance_rf_age_1$ici),
+  " (",
+  sprintf ('%.3f', performance_rf_age_1$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_age_1$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_age_2$ici),
+  " (",
+  sprintf ('%.3f', performance_rf_age_2$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_age_2$ici_975),
+  ") \\\\ \n ",
+  "& SBS & ",
+  sprintf ('%.3f', performance_rf_age_1$sbs),
+  " (",
+  sprintf ('%.3f', performance_rf_age_1$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_age_1$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_age_2$sbs),
+  " (",
+  sprintf ('%.3f', performance_rf_age_2$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_age_2$sbs_975),
+  ") \\\\ \n ",
+  "\\midrule \n",
+  "\\multirow{8}{*}{Boosted Tree} & Sensitivity & ",
+  sprintf ('%.3f', performance_gb_age_1$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_gb_age_1$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_age_1$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_age_2$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_gb_age_2$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_age_2$sensitivity_975),
+  ") \\\\ \n ",
+  "& Specificity & ",
+  sprintf ('%.3f', performance_gb_age_1$specificity),
+  " (",
+  sprintf ('%.3f', performance_gb_age_1$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_age_1$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_age_2$specificity),
+  " (",
+  sprintf ('%.3f', performance_gb_age_2$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_age_2$specificity_975),
+  ") \\\\ \n ",
+  "& NPV & ",
+  sprintf ('%.3f', performance_gb_age_1$npv),
+  " (",
+  sprintf ('%.3f', performance_gb_age_1$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_age_1$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_age_2$npv),
+  " (",
+  sprintf ('%.3f', performance_gb_age_2$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_age_2$npv_975),
+  ") \\\\ \n ",
+  "& PPV & ",
+  sprintf ('%.3f', performance_gb_age_1$ppv),
+  " (",
+  sprintf ('%.3f', performance_gb_age_1$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_age_1$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_age_2$ppv),
+  " (",
+  sprintf ('%.3f', performance_gb_age_2$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_age_2$ppv_975),
+  ") \\\\ \n ",
+  "& AUC-ROC & ",
+  sprintf ('%.3f', performance_gb_age_1$roc),
+  " (",
+  sprintf ('%.3f', performance_gb_age_1$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_age_1$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_age_2$roc),
+  " (",
+  sprintf ('%.3f', performance_gb_age_2$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_age_2$roc_975),
+  ") \\\\ \n ",
+  "& AUC-PR & ",
+  sprintf ('%.3f', performance_gb_age_1$pr),
+  " (",
+  sprintf ('%.3f', performance_gb_age_1$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_age_1$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_age_2$pr),
+  " (",
+  sprintf ('%.3f', performance_gb_age_2$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_age_2$pr_975),
+  ") \\\\ \n ",
+  "& ICI & ",
+  sprintf ('%.3f', performance_gb_age_1$ici),
+  " (",
+  sprintf ('%.3f', performance_gb_age_1$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_age_1$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_age_2$ici),
+  " (",
+  sprintf ('%.3f', performance_gb_age_2$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_age_2$ici_975),
+  ") \\\\ \n ",
+  "& SBS & ",
+  sprintf ('%.3f', performance_gb_age_1$sbs),
+  " (",
+  sprintf ('%.3f', performance_gb_age_1$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_age_1$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_age_2$sbs),
+  " (",
+  sprintf ('%.3f', performance_gb_age_2$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_age_2$sbs_975),
+  ") \\\\ \n ",
+  sep = ""
+)
+
+cat (table_S6)
+
+```
+
+## Table S7 - Performance by sex
+
+```{r}
+
+table_S7 <- str_c (
+  
+  "\\multirow{4}{*}{FVC $<$ LLN} & Sensitivity & ",
+  sprintf ('%.3f', performance_ers_ats_sex_1$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_sex_1$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_sex_1$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_sex_2$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_sex_2$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_sex_2$sensitivity_975),
+  ") \\\\ \n ",
+  "& Specificity & ",
+  sprintf ('%.3f', performance_ers_ats_sex_1$specificity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_sex_1$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_sex_1$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_sex_2$specificity),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_sex_2$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_sex_2$specificity_975),
+  ") \\\\ \n ",
+  "& NPV & ",
+  sprintf ('%.3f', performance_ers_ats_sex_1$npv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_sex_1$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_sex_1$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_sex_2$npv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_sex_2$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_sex_2$npv_975),
+  ") \\\\ \n ",
+  "& PPV & ",
+  sprintf ('%.3f', performance_ers_ats_sex_1$ppv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_sex_1$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_sex_1$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_ers_ats_sex_2$ppv),
+  " (",
+  sprintf ('%.3f', performance_ers_ats_sex_2$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_ers_ats_sex_2$ppv_975),
+  ") \\\\ \n ",
+  "\\midrule \n",
+  "\\multirow{8}{*}{Logistic Regression} & Sensitivity & ",
+  sprintf ('%.3f', performance_lr_sex_1$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_lr_sex_1$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_sex_1$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_sex_2$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_lr_sex_2$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_sex_2$sensitivity_975),
+  ") \\\\ \n ",
+  "& Specificity & ",
+  sprintf ('%.3f', performance_lr_sex_1$specificity),
+  " (",
+  sprintf ('%.3f', performance_lr_sex_1$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_sex_1$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_sex_2$specificity),
+  " (",
+  sprintf ('%.3f', performance_lr_sex_2$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_sex_2$specificity_975),
+  ") \\\\ \n ",
+  "& NPV & ",
+  sprintf ('%.3f', performance_lr_sex_1$npv),
+  " (",
+  sprintf ('%.3f', performance_lr_sex_1$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_sex_1$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_sex_2$npv),
+  " (",
+  sprintf ('%.3f', performance_lr_sex_2$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_sex_2$npv_975),
+  ") \\\\ \n ",
+  "& PPV & ",
+  sprintf ('%.3f', performance_lr_sex_1$ppv),
+  " (",
+  sprintf ('%.3f', performance_lr_sex_1$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_sex_1$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_sex_2$ppv),
+  " (",
+  sprintf ('%.3f', performance_lr_sex_2$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_sex_2$ppv_975),
+  ") \\\\ \n ",
+  "& AUC-ROC & ",
+  sprintf ('%.3f', performance_lr_sex_1$roc),
+  " (",
+  sprintf ('%.3f', performance_lr_sex_1$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_sex_1$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_sex_2$roc),
+  " (",
+  sprintf ('%.3f', performance_lr_sex_2$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_sex_2$roc_975),
+  ") \\\\ \n ",
+  "& AUC-PR & ",
+  sprintf ('%.3f', performance_lr_sex_1$pr),
+  " (",
+  sprintf ('%.3f', performance_lr_sex_1$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_sex_1$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_sex_2$pr),
+  " (",
+  sprintf ('%.3f', performance_lr_sex_2$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_sex_2$pr_975),
+  ") \\\\ \n ",
+  "& ICI & ",
+  sprintf ('%.3f', performance_lr_sex_1$ici),
+  " (",
+  sprintf ('%.3f', performance_lr_sex_1$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_sex_1$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_sex_2$ici),
+  " (",
+  sprintf ('%.3f', performance_lr_sex_2$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_sex_2$ici_975),
+  ") \\\\ \n ",
+  "& SBS & ",
+  sprintf ('%.3f', performance_lr_sex_1$sbs),
+  " (",
+  sprintf ('%.3f', performance_lr_sex_1$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_sex_1$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_lr_sex_2$sbs),
+  " (",
+  sprintf ('%.3f', performance_lr_sex_2$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_lr_sex_2$sbs_975),
+  ") \\\\ \n ",
+  "\\midrule \n",
+  "\\multirow{8}{*}{Random Forest} & Sensitivity & ",
+  sprintf ('%.3f', performance_rf_sex_1$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_rf_sex_1$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_sex_1$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_sex_2$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_rf_sex_2$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_sex_2$sensitivity_975),
+  ") \\\\ \n ",
+  "& Specificity & ",
+  sprintf ('%.3f', performance_rf_sex_1$specificity),
+  " (",
+  sprintf ('%.3f', performance_rf_sex_1$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_sex_1$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_sex_2$specificity),
+  " (",
+  sprintf ('%.3f', performance_rf_sex_2$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_sex_2$specificity_975),
+  ") \\\\ \n ",
+  "& NPV & ",
+  sprintf ('%.3f', performance_rf_sex_1$npv),
+  " (",
+  sprintf ('%.3f', performance_rf_sex_1$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_sex_1$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_sex_2$npv),
+  " (",
+  sprintf ('%.3f', performance_rf_sex_2$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_sex_2$npv_975),
+  ") \\\\ \n ",
+  "& PPV & ",
+  sprintf ('%.3f', performance_rf_sex_1$ppv),
+  " (",
+  sprintf ('%.3f', performance_rf_sex_1$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_sex_1$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_sex_2$ppv),
+  " (",
+  sprintf ('%.3f', performance_rf_sex_2$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_sex_2$ppv_975),
+  ") \\\\ \n ",
+  "& AUC-ROC & ",
+  sprintf ('%.3f', performance_rf_sex_1$roc),
+  " (",
+  sprintf ('%.3f', performance_rf_sex_1$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_sex_1$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_sex_2$roc),
+  " (",
+  sprintf ('%.3f', performance_rf_sex_2$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_sex_2$roc_975),
+  ") \\\\ \n ",
+  "& AUC-PR & ",
+  sprintf ('%.3f', performance_rf_sex_1$pr),
+  " (",
+  sprintf ('%.3f', performance_rf_sex_1$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_sex_1$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_sex_2$pr),
+  " (",
+  sprintf ('%.3f', performance_rf_sex_2$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_sex_2$pr_975),
+  ") \\\\ \n ",
+  "& ICI & ",
+  sprintf ('%.3f', performance_rf_sex_1$ici),
+  " (",
+  sprintf ('%.3f', performance_rf_sex_1$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_sex_1$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_sex_2$ici),
+  " (",
+  sprintf ('%.3f', performance_rf_sex_2$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_sex_2$ici_975),
+  ") \\\\ \n ",
+  "& SBS & ",
+  sprintf ('%.3f', performance_rf_sex_1$sbs),
+  " (",
+  sprintf ('%.3f', performance_rf_sex_1$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_sex_1$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_rf_sex_2$sbs),
+  " (",
+  sprintf ('%.3f', performance_rf_sex_2$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_rf_sex_2$sbs_975),
+  ") \\\\ \n ",
+  "\\midrule \n",
+  "\\multirow{8}{*}{Tree Boosted} & Sensitivity & ",
+  sprintf ('%.3f', performance_gb_sex_1$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_gb_sex_1$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_sex_1$sensitivity_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_sex_2$sensitivity),
+  " (",
+  sprintf ('%.3f', performance_gb_sex_2$sensitivity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_sex_2$sensitivity_975),
+  ") \\\\ \n ",
+  "& Specificity & ",
+  sprintf ('%.3f', performance_gb_sex_1$specificity),
+  " (",
+  sprintf ('%.3f', performance_gb_sex_1$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_sex_1$specificity_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_sex_2$specificity),
+  " (",
+  sprintf ('%.3f', performance_gb_sex_2$specificity_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_sex_2$specificity_975),
+  ") \\\\ \n ",
+  "& NPV & ",
+  sprintf ('%.3f', performance_gb_sex_1$npv),
+  " (",
+  sprintf ('%.3f', performance_gb_sex_1$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_sex_1$npv_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_sex_2$npv),
+  " (",
+  sprintf ('%.3f', performance_gb_sex_2$npv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_sex_2$npv_975),
+  ") \\\\ \n ",
+  "& PPV & ",
+  sprintf ('%.3f', performance_gb_sex_1$ppv),
+  " (",
+  sprintf ('%.3f', performance_gb_sex_1$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_sex_1$ppv_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_sex_2$ppv),
+  " (",
+  sprintf ('%.3f', performance_gb_sex_2$ppv_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_sex_2$ppv_975),
+  ") \\\\ \n ",
+  "& AUC-ROC & ",
+  sprintf ('%.3f', performance_gb_sex_1$roc),
+  " (",
+  sprintf ('%.3f', performance_gb_sex_1$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_sex_1$roc_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_sex_2$roc),
+  " (",
+  sprintf ('%.3f', performance_gb_sex_2$roc_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_sex_2$roc_975),
+  ") \\\\ \n ",
+  "& AUC-PR & ",
+  sprintf ('%.3f', performance_gb_sex_1$pr),
+  " (",
+  sprintf ('%.3f', performance_gb_sex_1$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_sex_1$pr_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_sex_2$pr),
+  " (",
+  sprintf ('%.3f', performance_gb_sex_2$pr_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_sex_2$pr_975),
+  ") \\\\ \n ",
+  "& ICI & ",
+  sprintf ('%.3f', performance_gb_sex_1$ici),
+  " (",
+  sprintf ('%.3f', performance_gb_sex_1$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_sex_1$ici_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_sex_2$ici),
+  " (",
+  sprintf ('%.3f', performance_gb_sex_2$ici_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_sex_2$ici_975),
+  ") \\\\ \n ",
+  "& SBS & ",
+  sprintf ('%.3f', performance_gb_sex_1$sbs),
+  " (",
+  sprintf ('%.3f', performance_gb_sex_1$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_sex_1$sbs_975),
+  ") & ",
+  sprintf ('%.3f', performance_gb_sex_2$sbs),
+  " (",
+  sprintf ('%.3f', performance_gb_sex_2$sbs_025),
+  " to ",
+  sprintf ('%.3f', performance_gb_sex_2$sbs_975),
+  ") \\\\ \n ",    
+  sep = ""
+
+)
+
+cat (table_S7)
+
+```
+
+# Figures
+
+## Figure 1a - Discrimination
+
+```{r}
+
+color_ers_ats <- "#374E55FF"
+color_lr <- "#B24745FF"
+color_rf <- "#79AF97FF"
+color_gb <- "#DF8F44FF"
+
+color_1 <- "#79AF97FF"
+color_2 <- "#B24745FF"
+color_3 <- "#374E55FF"
+color_4 <- "#DF8F44FF"
+color_5 <- "#6A6599FF"
+
+
+observed <- recode (pull (validation, restrictive), "yes" = 1, "no" = 0)
+
+#### ROC Curve ####
+
+# Logistic Regression
+
+predicted <- predict (model_lr, validation, type = 'prob')[,2]
+
+lr_roc <- tibble (cutoff = seq (0, 1, length.out = 100)) %>%
+  rowwise () %>%
+  mutate (model = "lr") %>% 
+  mutate (x = 1 - get_specificity (predicted, observed, cutoff)) %>% 
+  mutate (y = get_sensitivity (predicted, observed, cutoff)) %>%
+  mutate (y_lower = get_sensitivity_lower (predicted, observed, cutoff)) %>% 
+  mutate (y_upper = get_sensitivity_upper (predicted, observed, cutoff)) %>% 
+  select (model, x, y, y_lower, y_upper)
+
+# Random Forests
+
+predicted <- predict (model_rf, validation, type = 'prob')[,2]
+
+rf_roc <- tibble (cutoff = seq (0, 1, length.out = 100)) %>%
+  rowwise () %>%
+  mutate (model = "rf") %>%
+  mutate (x = 1 - get_specificity (predicted, observed, cutoff)) %>%
+  mutate (y = get_sensitivity (predicted, observed, cutoff)) %>%
+  mutate (y_lower = get_sensitivity_lower (predicted, observed, cutoff)) %>% 
+  mutate (y_upper = get_sensitivity_upper (predicted, observed, cutoff)) %>%   
+  select (model, x, y, y_lower, y_upper)
+
+# Gradient Boosted Regression Trees
+
+predicted <- predict (model_gb, validation, type = 'prob')[,2]
+
+gb_roc <- tibble (cutoff = seq (0, 1, length.out = 100)) %>%
+  rowwise () %>%
+  mutate (model = "gb") %>% 
+  mutate (x = 1 - get_specificity (predicted, observed, cutoff)) %>% 
+  mutate (y = get_sensitivity (predicted, observed, cutoff)) %>% 
+  mutate (y_lower = get_sensitivity_lower (predicted, observed, cutoff)) %>% 
+  mutate (y_upper = get_sensitivity_upper (predicted, observed, cutoff)) %>%   
+  select (model, x, y, y_lower, y_upper)
+
+figure_1a_data <- rbind (lr_roc, rf_roc, gb_roc)
+
+a_x_ers_ats <- 1 - get_specificity_ers_ats (validation)[[1]]
+a_y_ers_ats <- get_sensitivity_ers_ats (validation)[[1]]
+
+figure_1a <- figure_1a_data %>% 
+  ggplot (aes (x = x)) +
+    geom_line (aes (y = y, color = model)) +
+    geom_ribbon (aes (ymin = y_lower, ymax = y_upper, fill = model), alpha = 0.5) +
+    coord_fixed() +
+    geom_segment (aes (x = 0, xend = 1, y = 0, yend = 1), color = "black") +
+    xlab ("1 - Specificity") +
+    ylab ("Sensitivity") +
+    scale_color_manual (
+      name = "Model",
+      breaks = c ("gb", "lr", "rf"),
+      labels = c ("Boosted Tree", "Logistic Regression", "Random Forest"),
+      values = c (color_gb, color_lr, color_rf)
+    ) +
+    scale_fill_manual (
+      name = "Model",
+      breaks = c ("gb", "lr", "rf"),
+      labels = c ("Boosted Tree", "Logistic Regression", "Random Forest"),
+      values = c (color_gb, color_lr, color_rf)
+    ) +
+  theme_classic (base_size = 15) +
+  geom_point (aes (x = a_x_ers_ats, y = a_y_ers_ats), colour = color_ers_ats) +
+  annotate ("text", x = a_x_ers_ats + 0.12, y = a_y_ers_ats, size = 4, label = "FVC < LLN")
+  
+ggsave ("../figures/figure-1a.png", width = 20, height = 15, units = "cm")
+
+```
+
+## Figure 1b - Calibration
+
+```{r}
+
+# Calibration Plot
+
+observed <- recode (pull (validation, restrictive), "yes" = 1, "no" = 0)
+
+# Logistic Regression
+
+predicted_lr <- predict (model_lr, validation, type = 'prob')[,2]
+
+figure_1ba_lr_data <- tibble (
+  observed = observed,
+  predicted = predicted_lr
+) %>%
+mutate (bin = cut_interval (predicted, n = 10)) %>%
+group_by (bin) %>%
+mutate (n = n ()) %>%
+mutate (bin_pred = mean (predicted)) %>%
+mutate (bin_prob = mean (observed)) %>%
+mutate (se = sqrt (bin_prob * (1 - bin_prob) / n)) %>%
+mutate (lower_limit = bin_prob - 1.96 * se) %>%
+mutate (upper_limit = bin_prob + 1.96 * se) %>%
+mutate (lower_limit = oob_squish (lower_limit, range = c (0,1))) %>%
+mutate (upper_limit = oob_squish (upper_limit, range = c (0,1))) %>%
+mutate (model = "Logistic Regression") %>%
+ungroup ()
+
+# Random Forest
+
+predicted_rf <- predict (model_rf, validation, type = 'prob')[,2]
+
+figure_1ba_rf_data <- tibble (
+  observed = observed,
+  predicted = predicted_rf
+) %>%
+mutate (bin = cut_interval (predicted, n = 10)) %>%
+group_by (bin) %>%
+mutate (n = n ()) %>%
+mutate (bin_pred = mean (predicted)) %>%
+mutate (bin_prob = mean (observed)) %>%
+mutate (se = sqrt (bin_prob * (1 - bin_prob) / n)) %>%
+mutate (lower_limit = bin_prob - 1.96 * se) %>%
+mutate (upper_limit = bin_prob + 1.96 * se) %>%
+mutate (lower_limit = oob_squish (lower_limit, range = c (0,1))) %>%
+mutate (upper_limit = oob_squish (upper_limit, range = c (0,1))) %>%
+mutate (model = "Random Forest") %>%
+ungroup ()
+
+# Boosted Tree
+
+predicted_gb <- predict (model_gb, validation, type = 'prob')[,2]
+
+figure_1ba_gb_data <- tibble (
+  observed = observed,
+  predicted = predicted_gb
+) %>%
+mutate (bin = cut_interval (predicted, n = 10)) %>%
+group_by (bin) %>%
+mutate (n = n ()) %>%
+mutate (bin_pred = mean (predicted)) %>%
+mutate (bin_prob = mean (observed)) %>%
+mutate (se = sqrt (bin_prob * (1 - bin_prob) / n)) %>%
+mutate (lower_limit = bin_prob - 1.96 * se) %>%
+mutate (upper_limit = bin_prob + 1.96 * se) %>%
+mutate (lower_limit = oob_squish (lower_limit, range = c (0,1))) %>%
+mutate (upper_limit = oob_squish (upper_limit, range = c (0,1))) %>%
+mutate (model = "Boosted Tree") %>%
+ungroup ()
+
+figure_1ba_data <- rbind (
+  figure_1ba_lr_data,
+  figure_1ba_rf_data,
+  figure_1ba_gb_data
+)
+
+figure_1ba <- ggplot (figure_1ba_data, aes(x = bin_pred, y = bin_prob)) +
+  scale_y_continuous (limits = c (0, 1), breaks = seq (0, 1, by = 0.1)) +
+  scale_x_continuous (limits = c (0, 1), breaks = seq (0, 1, by = 0.1)) + 
+  geom_abline (linetype = "solid") +
+  geom_line (aes (color = model), size = 1) +
+  geom_errorbar (aes(color = model, ymin = lower_limit, ymax = upper_limit), width = 0.01, size = 0.1) +
+  scale_color_manual (
+    name = "Model",
+    values = c (
+      "Boosted Tree" = color_gb,
+      "Logistic Regression" = color_lr,
+      "Random Forest" = color_rf
+    ),
+    breaks = c (
+      "Bosted Tree",
+      "Logistic Regression",
+      "Random Forest"
+    )
+  ) +
+  theme_classic (base_size = 15) +
+  theme (
+    plot.margin = unit ( c (0, 0, 0, 0), "cm")
+  ) +
+  xlab ("Predicted") +
+  ylab ("Observed")  
+
+y <- figure_1ba_data %>% 
+  filter (model == "Logistic Regression") %>% 
+  distinct (bin, .keep_all = TRUE) %>% 
+  arrange (bin_pred) %>% 
+  pull (n)
+
+figure_1bb_lr_data <- tibble (
+  x = seq (from = 0.05, to = 0.95, by = 0.1),
+  y = y,
+  model = rep ("Logistic Regression", times = 10)
+)
+
+y <- figure_1ba_data %>% 
+  filter (model == "Random Forest") %>% 
+  distinct (bin, .keep_all = TRUE) %>% 
+  arrange (bin_pred) %>% 
+  pull (n)
+
+figure_1bb_rf_data <- tibble (
+  x = seq (from = 0.05, to = 0.95, by = 0.1),
+  y = y,
+  model = rep ("Random Forest", times = 10)
+)
+
+y <- figure_1ba_data %>% 
+  filter (model == "Boosted Tree") %>% 
+  distinct (bin, .keep_all = TRUE) %>% 
+  arrange (bin_pred) %>% 
+  pull (n)
+
+figure_1bb_gb_data <- tibble (
+  x = seq (from = 0.05, to = 0.95, by = 0.1),
+  y = y,
+  model = rep ("Boosted Tree", times = 10)
+)
+
+figure_1bb_data <- rbind (
+  figure_1bb_lr_data,
+  figure_1bb_rf_data,
+  figure_1bb_gb_data
+)
+
+figure_1bb_data$model <- factor (figure_1bb_data$model,
+  levels = c (
+    "Boosted Tree",
+    "Logistic Regression",
+    "Random Forest"
+  )  
+)
+
+figure_1bb <- figure_1bb_data %>% 
+  ggplot (aes (x = x, y = y, fill = model)) +
+    geom_bar (position = "dodge", stat = "identity") +
+    scale_fill_manual (
+      name = "Model",
+      values = c (
+        "Boosted Tree" = color_gb,
+        "Logistic Regression" = color_lr,
+        "Random Forest" = color_rf
+      ),
+      breaks = c (
+        "Boosted Tree",
+        "Logistic Regression",
+        "Random Forest"
+      )
+    ) +
+    theme_classic (base_size = 15) +
+    theme (
+      axis.text.x = element_blank (),
+      axis.ticks.x = element_blank (),
+      axis.text.y = element_blank (),
+      axis.ticks.y = element_blank (),
+      plot.margin = unit ( c (0, 0, 0, 0), "cm")
+    ) +
+    xlab ("") +
+    ylab ("Count")
+
+figure_1b <- plot_grid (
+  figure_1ba + theme (legend.position = "none"),
+  figure_1bb + theme (legend.position = "none"),
+  align = "vh", 
+  labels = c ("", ""),
+  rel_heights = c (5, 1),
+  hjust = 0,
+  nrow = 2
+)
+
+legend = get_legend (figure_1ba)
+
+plot_grid (figure_1b, legend, ncol = 2, rel_widths = c (0.7, 0.3), label_size = 50)
+
+ggsave ("../figures/figure-1b.png", width = 20, height = 15, units = "cm")
+
+```
+
+### Figure 2 - Decision Curve Analysis
+
+```{r}
+
+color_ers_ats <- "#374E55FF"
+color_lr <- "#B24745FF"
+color_rf <- "#79AF97FF"
+color_gb <- "#DF8F44FF"
+
+data_none <- tibble (
+  model = rep ("none"),  
+  threshold = seq (from = 0, to = 0.99, by = 0.01),
+  net_benefit = rep (0)
+) 
+
+prevalence <- validation %>% 
+  filter (tlc_z_score < -1.645) %>% 
+  nrow () %>% 
+  '/' (nrow (validation))
+
+data_all <- tibble (
+  model = rep ("all"),
+  threshold = seq (from = 0, to = 0.99, by = 0.01)) %>%
+  mutate (net_benefit = prevalence - (1 - prevalence) * threshold / (1 - threshold))
+
+data_ers_ats <- tibble (
+    model = rep ("ers_ats"),
+    threshold = seq (from = 0, to = 0.99, by = 0.01)
+  ) %>% 
+  rowwise () %>% 
+  mutate (true_positive = get_true_positive_ers_ats (validation)) %>% 
+  mutate (false_positive = get_false_positive_ers_ats (validation)) %>% 
+  mutate (net_benefit = true_positive - false_positive * threshold / (1 - threshold)) %>% 
+  select (model, threshold, net_benefit)
+
+data_gb <- tibble (
+  model = rep ("gb"),
+  threshold = seq (from = 0, to = 0.99, by = 0.01)) %>%
+  rowwise () %>% 
+  mutate (true_positive = get_true_positive (
+    model_gb, validation, "restrictive", threshold)) %>% 
+  mutate (false_positive = get_false_positive (
+    model_gb, validation, "restrictive", threshold)) %>% 
+  mutate (net_benefit = true_positive - false_positive * threshold / (1 - threshold)) %>% 
+  select (model, threshold, net_benefit)
+
+data_lr <- tibble (
+  model = rep ("lr"),
+  threshold = seq (from = 0, to = 0.99, by = 0.01)) %>%
+  rowwise () %>% 
+  mutate (true_positive = get_true_positive (
+    model_lr, validation, "restrictive", threshold)) %>% 
+  mutate (false_positive = get_false_positive (
+    model_lr, validation, "restrictive", threshold)) %>% 
+  mutate (net_benefit = true_positive - false_positive * threshold / (1 - threshold)) %>% 
+  select (model, threshold, net_benefit)
+
+data_rf <- tibble (
+  model = rep ("rf"),
+  threshold = seq (from = 0, to = 0.99, by = 0.01)) %>%
+  rowwise () %>% 
+  mutate (true_positive = get_true_positive (
+    model_rf, validation, "restrictive", threshold)) %>% 
+  mutate (false_positive = get_false_positive (
+    model_rf, validation, "restrictive", threshold)) %>% 
+  mutate (net_benefit = true_positive - false_positive * threshold / (1 - threshold)) %>% 
+  select (model, threshold, net_benefit)
+
+data <- rbind (
+  data_none,
+  data_all,
+  data_ers_ats,
+  data_lr,
+  data_rf,
+  data_gb
+)
+
+ggplot (data = data, aes (x = threshold, y = net_benefit, color = model)) +
+  geom_line (size = 1) +
+  theme_classic (base_size = 15) +
+  coord_fixed () +
+  xlim (0, 1) +
+  ylim (-0.1, 0.5) +
+  xlab ("Threshold") +
+  ylab ("Net Benefit") +
+  scale_color_manual (
+    name = "Model",
+    breaks = c ("none", "all", "ers_ats", "gb", "lr", "rf"),
+    labels = c (
+      "None Restrictive",
+      "All Restrictive",
+      "FVC < LLN",
+      "Boosted Tree",
+      "Logistic Regression",
+      "Random Forest"),
+    values = c ("gray", "#80796B", color_ers_ats, color_gb, color_lr, color_rf)
+  )
+
+ggsave ("../figures/figure-2.png", width = 20, height = 15, units = "cm")
+
+```
+
+## Figure S1 - Flow Diagram for Inclusion in the Development Set
+
+## Figure S2 - FVC Z-Score and NPV
+
+```{r}
+
+color_ers_ats <- "#374E55FF"
+color_lr <- "#B24745FF"
+color_rf <- "#79AF97FF"
+color_gb <- "#DF8F44FF"
+
+predicted_lr <- predict (model_lr, validation, type = 'prob')[,2]
+predicted_rf <- predict (model_rf, validation, type = 'prob')[,2]
+predicted_gb <- predict (model_gb, validation, type = 'prob')[,2]
+
+data <- tibble (
+  fvc_z_score = rep (seq (from = -3.145, to = 0.655, by = 0.2), 4),
+  npv = rep (NA, 80),
+  npv_lower = rep (NA, 80),
+  npv_upper = rep (NA, 80),
+  model = c (
+    rep ("ers_ats", 20),
+    rep ("gb", 20),
+    rep ("lr", 20),
+    rep ("rf", 20)
+  )  
+)
+
+for (i in 0:19) {
+
+  lower <- -3.145 + (i * 0.2) - 0.1
+  upper <- -3.145 + (i * 0.2) + 0.1
+  
+  # ERS/ATS
+  
+  numerator <- validation %>% 
+    filter (fvc_z_score >= lower & fvc_z_score < upper) %>% 
+    filter (fvc_z_score > -1.645 & tlc_z_score > -1.645) %>% 
+    nrow ()  
+  
+  denominator <- validation %>% 
+    filter (fvc_z_score >= lower & fvc_z_score < upper) %>%
+    filter (fvc_z_score > -1.645) %>% 
+    nrow ()
+  
+  npv <- numerator / denominator
+  
+  if (is.na (npv) == 0) {
+  
+    npv_lower <- exactci (numerator, denominator, 0.95)$conf.int [[1]]
+    npv_upper <- exactci (numerator, denominator, 0.95)$conf.int [[2]]  
+    
+    data [i + 1, 2] <- npv * 100
+    data [i + 1, 3] <- npv_lower * 100
+    data [i + 1, 4] <- npv_upper * 100
+    
+  }
+  
+  # Boosted Tree
+  
+  numerator <- validation %>% 
+    add_column (predicted_gb = predicted_gb) %>% 
+    filter (fvc_z_score >= lower & fvc_z_score < upper) %>%
+    filter (predicted_gb < cutoff_gb & tlc_z_score > -1.645) %>% 
+    nrow ()
+  
+  denominator <- validation %>% 
+    add_column (predicted_gb = predicted_gb) %>% 
+    filter (fvc_z_score >= lower & fvc_z_score < upper) %>%
+    filter (predicted_gb < cutoff_gb) %>% 
+    nrow ()  
+  
+  npv <- numerator / denominator
+  npv_lower <- exactci (numerator, denominator, 0.95)$conf.int [[1]]
+  npv_upper <- exactci (numerator, denominator, 0.95)$conf.int [[2]]
+  
+  data [i + 21, 2] <- npv * 100
+  data [i + 21, 3] <- npv_lower * 100
+  data [i + 21, 4] <- npv_upper * 100
+  
+  # Logistic Regression
+  
+  numerator <- validation %>% 
+    add_column (predicted_lr = predicted_lr) %>% 
+    filter (fvc_z_score >= lower & fvc_z_score < upper) %>%
+    filter (predicted_lr < cutoff_lr & tlc_z_score > -1.645) %>% 
+    nrow ()
+  
+  denominator <- validation %>% 
+    add_column (predicted_lr = predicted_lr) %>% 
+    filter (fvc_z_score >= lower & fvc_z_score < upper) %>%
+    filter (predicted_lr < cutoff_lr) %>% 
+    nrow ()  
+  
+  npv <- numerator / denominator
+  npv_lower <- exactci (numerator, denominator, 0.95)$conf.int [[1]]
+  npv_upper <- exactci (numerator, denominator, 0.95)$conf.int [[2]]
+  
+  data [i + 41, 2] <- npv * 100
+  data [i + 41, 3] <- npv_lower * 100
+  data [i + 41, 4] <- npv_upper * 100
+  
+  # Random Forest
+    
+  numerator <- validation %>% 
+    add_column (predicted_rf = predicted_rf) %>% 
+    filter (fvc_z_score >= lower & fvc_z_score < upper) %>%
+    filter (predicted_rf < cutoff_rf & tlc_z_score > -1.645) %>% 
+    nrow ()
+  
+  denominator <- validation %>% 
+    add_column (predicted_rf = predicted_rf) %>% 
+    filter (fvc_z_score >= lower & fvc_z_score < upper) %>%
+    filter (predicted_rf < cutoff_rf) %>% 
+    nrow ()  
+  
+  npv <- numerator / denominator
+  npv_lower <- exactci (numerator, denominator, 0.95)$conf.int [[1]]
+  npv_upper <- exactci (numerator, denominator, 0.95)$conf.int [[2]]
+  
+  data [i + 61, 2] <- npv * 100
+  data [i + 61, 3] <- npv_lower * 100
+  data [i + 61, 4] <- npv_upper * 100
+  
+}
+
+figure <- data %>% 
+  ggplot (aes (x = fvc_z_score)) +
+    geom_line (aes (y = npv, color = model)) +
+    geom_errorbar (aes(color = model, ymin = npv_lower, ymax = npv_upper), width = 0.03, size = 0.1) +
+    scale_x_continuous (
+      "Forced Vital Capacity (Z-Score)",
+      limits = c (-3.2, 0.8),
+      breaks = c (-3, -2, -1, 0, 1),
+      labels = c ("-3", "-2", "-1", "0", "1")
+    ) +
+    scale_y_continuous (
+      "Negative Predictive Value (%)",
+      limits = c (0, 100),
+      breaks = c (0, 25, 50, 75, 100),
+      labels = c ("0", "25", "50", "75", "100")
+    ) +
+    theme_classic (base_size = 15) +
+    scale_fill_manual (
+      name = "Model",
+      breaks = c (
+        "ers_ats",
+        "gb",
+        "lr",
+        "rf"
+      ),
+      labels = c (
+        "FVC < LLN",
+        "Boosted Tree",
+        "Logistic Regression",
+        "Random Forest"
+      ),
+      values = c (
+        color_ers_ats,
+        color_gb,
+        color_lr,
+        color_rf
+      ),    
+    ) +
+    scale_color_manual (
+      name = "Model",
+      breaks = c (
+        "ers_ats",
+        "gb",
+        "lr",
+        "rf"
+      ),
+      labels = c (
+        "FVC < LLN",
+        "Boosted Tree",
+        "Logistic Regression",
+        "Random Forest"
+      ),
+      values = c (
+        color_ers_ats,
+        color_gb,
+        color_lr,
+        color_rf
+      ),    
+    )
+  
+ggsave ("../figures/figure-S2.png", width = 25, height = 15, units = "cm")
+
+```
+
+## Figure S3 - FVC Z-Score and Exclusion of Restriction
+
+```{r}
+
+color_ers_ats <- "#374E55FF"
+color_lr <- "#B24745FF"
+color_rf <- "#79AF97FF"
+color_gb <- "#DF8F44FF"
+
+data <- tibble (
+  fvc_z_score = rep (seq (from = -3.145, to = 0.655, by = 0.2), 3),
+  percentage = rep (NA, 60),
+  percentage_lower = rep (NA, 60),
+  percentage_upper = rep (NA, 60),
+  model = c (
+    rep ("gb", 20),
+    rep ("lr", 20),
+    rep ("rf", 20)
+  )
+)
+
+for (i in 0:19) {
+
+  lower <- -3.145 + (i * 0.2) - 0.1
+  upper <- -3.145 + (i * 0.2) + 0.1
+  
+  denominator <- validation %>% 
+    filter (fvc_z_score >= lower & fvc_z_score < upper) %>% 
+    nrow ()
+  
+  # Boosted Tree
+  
+  numerator <- validation %>% 
+    add_column (predicted_gb = predicted_gb) %>% 
+    filter (fvc_z_score >= lower & fvc_z_score < upper) %>%
+    filter (predicted_gb < cutoff_gb) %>% 
+    nrow ()
+  
+  percentage <- numerator / denominator
+  percentage_lower <- exactci (numerator, denominator, 0.95)$conf.int [[1]]
+  percentage_upper <- exactci (numerator, denominator, 0.95)$conf.int [[2]]
+  
+  data [i + 1, 2] <- percentage * 100
+  data [i + 1, 3] <- percentage_lower * 100
+  data [i + 1, 4] <- percentage_upper * 100
+  
+  # Logistic Regression
+  
+  numerator <- validation %>% 
+    add_column (predicted_lr = predicted_lr) %>% 
+    filter (fvc_z_score >= lower & fvc_z_score < upper) %>%
+    filter (predicted_lr < cutoff_lr) %>% 
+    nrow ()
+  
+  percentage <- numerator / denominator
+  percentage_lower <- exactci (numerator, denominator, 0.95)$conf.int [[1]]
+  percentage_upper <- exactci (numerator, denominator, 0.95)$conf.int [[2]]
+  
+  data [i + 21, 2] <- percentage * 100
+  data [i + 21, 3] <- percentage_lower * 100
+  data [i + 21, 4] <- percentage_upper * 100
+  
+  # Random Forest
+    
+  numerator <- validation %>% 
+    add_column (predicted_rf = predicted_rf) %>% 
+    filter (fvc_z_score >= lower & fvc_z_score < upper) %>%
+    filter (predicted_rf < cutoff_rf) %>% 
+    nrow ()
+  
+  percentage <- numerator / denominator
+  percentage_lower <- exactci (numerator, denominator, 0.95)$conf.int [[1]]
+  percentage_upper <- exactci (numerator, denominator, 0.95)$conf.int [[2]]
+  
+  data [i + 41, 2] <- percentage * 100
+  data [i + 41, 3] <- percentage_lower * 100
+  data [i + 41, 4] <- percentage_upper * 100
+  
+}
+
+# ERS/ATS
+
+data <- data %>% 
+  add_row (
+    fvc_z_score = -3.145,
+    percentage = 0,
+    percentage_lower = NA,
+    percentage_upper = NA,
+    model = "ers_ats"
+  ) %>% 
+  add_row (
+    fvc_z_score = -1.645,
+    percentage = 0,
+    percentage_lower = NA,
+    percentage_upper = NA,
+    model = "ers_ats"
+  ) %>% 
+  add_row (
+    fvc_z_score = -1.645,
+    percentage = 100,
+    percentage_lower = NA,
+    percentage_upper = NA,
+    model = "ers_ats"
+  ) %>%   
+  add_row (
+    fvc_z_score = 0.055,
+    percentage = 100,
+    percentage_lower = NA,
+    percentage_upper = NA,
+    model = "ers_ats"
+  )
+
+figure <- data %>% 
+  ggplot (aes (x = fvc_z_score)) +
+    geom_line (aes (y = percentage, color = model)) +
+    geom_errorbar (aes (color = model, ymin = percentage_lower, ymax = percentage_upper), width = 0.03, size = 0.1) +
+    scale_x_continuous (
+      "Forced Vital Capacity (Z-Score)",
+      limits = c (-3.2, 0.8),
+      breaks = c (-3, -2, -1, 0, 1),
+      labels = c ("-3", "-2", "-1", "0", "1")
+    ) +
+    scale_y_continuous (
+      "Restriction Excluded (%)",
+      limits = c (0, 100),
+      breaks = c (0, 25, 50, 75, 100),
+      labels = c ("0", "25", "50", "75", "100")
+    ) +
+    theme_classic (base_size = 15) +
+    scale_fill_manual (
+      name = "Model",
+      breaks = c (
+        "ers_ats",
+        "gb",
+        "lr",
+        "rf"
+      ),
+      labels = c (
+        "FVC < LLN",
+        "Boosted Tree",
+        "Logistic Regression",
+        "Random Forest"
+      ),
+      values = c (
+        color_ers_ats,
+        color_gb,
+        color_lr,
+        color_rf
+      ),    
+    ) +
+    scale_color_manual (
+      name = "Model",
+      breaks = c (
+        "ers_ats",
+        "gb",
+        "lr",
+        "rf"
+      ),
+      labels = c (
+        "FVC < LLN",
+        "Boosted Tree",
+        "Logistic Regression",
+        "Random Forest"
+      ),
+      values = c (
+        color_ers_ats,
+        color_gb,
+        color_lr,
+        color_rf
+      ),    
+    )
+  
+ggsave ("../figures/figure-S3.png", width = 25, height = 15, units = "cm")
+
+```
+
+## Figure S4 - Shapley Values for Boosted Tree Model
+
+```{r}
+
+shapley_values_gb <- tibble (
+  none = numeric (),
+  age = numeric (),
+  height = numeric (),
+  weight = numeric (),
+  sex = numeric (),
+  fev05 = numeric (),
+  fev1 = numeric (),
+  fev3 = numeric (),
+  fev6 = numeric (),
+  fvc = numeric (),
+  fev1_fvc = numeric (),
+  fef2575 = numeric (),
+  fefmax = numeric (),
+  expiratory_time = numeric ()
+)
+
+X_train <- development %>% 
+  select (c (
+    "age",
+    "height",
+    "weight",
+    "sex",
+    "fev05",
+    "fev1",
+    "fev3",
+    "fev6",
+    "fvc",
+    "fev1_fvc",
+    "fef2575",
+    "fefmax",
+    "expiratory_time",
+    "restrictive")
+  ) %>% 
+  mutate (restrictive = case_when (
+    restrictive == "yes" ~ 1,
+    restrictive == "no" ~ 0)
+  ) %>% 
+  mutate (sex = case_when (
+    sex == 1 ~ 0,
+    sex == 2 ~ 1)
+  )
+
+features <- subset (as.data.frame (X_train), select = -restrictive)
+
+model <- xgboost (
+  data = data.matrix (features),
+  label = X_train$restrictive,
+  objective = "binary:logistic",
+  nrounds = model_gb$bestTune$nrounds,
+  max_depth = model_gb$bestTune$max_depth,
+  eta = model_gb$bestTune$eta,
+  gamma = model_gb$bestTune$gamma,
+  colsample_bytree = model_gb$bestTune$colsample_bytree,
+  min_child_weight = model_gb$bestTune$min_child_weight,
+  subsample = model_gb$bestTune$subsample
+)
+
+bootstraps <- 1000
+
+for (i in 1:bootstraps) {
+  
+  X_train_bootstrap <- slice_sample (X_train, n = 100, replace = TRUE)
+  
+  y_train_bootstrap <- X_train_bootstrap %>% pull (restrictive)
+  
+  X_train_bootstrap <- X_train_bootstrap %>%   
+    select (
+      age,
+      height,
+      weight,
+      sex,
+      fev05,
+      fev1,
+      fev3,
+      fev6,
+      fvc,
+      fev1_fvc,
+      fef2575,
+      fefmax,
+      expiratory_time
+    )  
+
+  explainer <- shapr(X_train_bootstrap, model)
+  
+  p <- mean (y_train_bootstrap)
+
+  explanation <- explain (
+    X_train_bootstrap,
+    approach = "empirical",
+    explainer = explainer,
+    prediction_zero = p
+  )
+  
+  shapley_values_gb_bootstrap <- as_tibble (explanation$dt) 
+    
+  shapley_values_gb <- rbind (shapley_values_gb, shapley_values_gb_bootstrap)
+  
+}
+
+write_csv (shapley_values_gb, "../data/shapley_values_gb.csv")
+
+age <- shapley_values_gb %>% 
+  pull (age) %>%
+  abs () %>% 
+  mean ()
+
+height <- shapley_values_gb %>% 
+  pull (height) %>%
+  abs () %>% 
+  mean ()
+
+weight <- shapley_values_gb %>% 
+  pull (weight) %>%
+  abs () %>% 
+  mean ()
+
+sex <- shapley_values_gb %>% 
+  pull (sex) %>%
+  abs () %>% 
+  mean ()
+
+fev05 <- shapley_values_gb %>% 
+  pull (fev05) %>%
+  abs () %>% 
+  mean ()
+
+fev1 <- shapley_values_gb %>% 
+  pull (fev1) %>%
+  abs () %>% 
+  mean ()
+
+fev3 <- shapley_values_gb %>% 
+  pull (fev3) %>%
+  abs () %>% 
+  mean ()
+
+fev6 <- shapley_values_gb %>% 
+  pull (fev6) %>%
+  abs () %>% 
+  mean ()
+
+fvc <- shapley_values_gb %>% 
+  pull (fvc) %>%
+  abs () %>% 
+  mean ()
+
+fev1_fvc <- shapley_values_gb %>% 
+  pull (fev1_fvc) %>%
+  abs () %>% 
+  mean ()
+
+fef2575 <- shapley_values_gb %>% 
+  pull (fef2575) %>%
+  abs () %>% 
+  mean ()
+
+fefmax <- shapley_values_gb %>% 
+  pull (fefmax) %>%
+  abs () %>% 
+  mean ()
+
+expiratory_time <- shapley_values_gb %>% 
+  pull (expiratory_time) %>%
+  abs () %>% 
+  mean ()
+
+data <- tibble (
+  feature = c (
+    "Age",
+    "Height",
+    "Weight",
+    "Sex",
+    "FEV0.5",
+    "FEV1",
+    "FEV3",
+    "FEV6",
+    "FVC",
+    "FEV1/FVC",
+    "FEF25-75",
+    "FEFMax",
+    "Expiratory Time"
+  ),
+  mean_absolute_shapley_value = c (
+    age,
+    height,
+    weight,
+    sex,
+    fev05,
+    fev1,
+    fev3,
+    fev6,
+    fvc,
+    fev1_fvc,
+    fef2575,
+    fefmax,
+    expiratory_time
+  )
+)
+
+figure <- ggplot (data, aes (x = reorder (feature, mean_absolute_shapley_value), y = mean_absolute_shapley_value)) +
+  geom_bar (stat = 'identity', width = 0.25, color = "black", fill = "white", lwd = 2) +
+  coord_flip () +
+  theme_classic (base_size = 15) +
+  scale_x_discrete (
+    "Feature"
+  ) +
+  scale_y_continuous (
+    "Mean Absolute Value of Shapley Value",
+    limits = c (0, 0.05),
+    breaks = c (0, 0.02, 0.04),
+    labels = c ("0", "0.02", "0.04")
+  ) +
+  theme (text = element_text(family = "Helvetica")) +
+  annotate (
+    "text",
+    x = "Age",
+    y = age + 0.005,
+    label = format (round (age, 3), nsmall = 3),
+    size = 4
+  )  +
+  annotate (
+    "text",
+    x = "Height",
+    y = height + 0.005,
+    label = format (round (height, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "Weight",
+    y = weight + 0.005,
+    label = format (round (weight, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "Sex",
+    y = sex + 0.005,
+    label = format (round (sex, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FEV0.5",
+    y = fev05 + 0.005,
+    label = format (round (fev05, 3), nsmall = 3),
+    size = 4
+  ) +
+  annotate (
+    "text",
+    x = "FEV1",
+    y = fev1 + 0.005,
+    label = format (round (fev1, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FEV3",
+    y = fev3 + 0.005,
+    label = format (round (fev3, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FEV6",
+    y = fev6 + 0.005,
+    label = format (round (fev6, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FVC",
+    y = fvc + 0.005,
+    label = format (round (fvc, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FEV1/FVC",
+    y = fev1_fvc + 0.005,
+    label = format (round (fev1_fvc, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FEF25-75",
+    y = fef2575 + 0.005,
+    label = format (round (fef2575, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FEFMax",
+    y = fefmax + 0.005,
+    label = format (round (fefmax, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "Expiratory Time",
+    y = expiratory_time + 0.005,
+    label = format (round (expiratory_time, 3), nsmall = 3),
+    size = 4
+  )
+  
+
+ggsave ("../figures/figure-S4.png", width = 20, height = 30, units = "cm") 
+
+```
+
+## Figure S5 - Shapley Values for Logistic Regression Model
+
+```{r}
+
+shapley_values_lr <- tibble (
+  none = numeric (),
+  age = numeric (),
+  height = numeric (),
+  weight = numeric (),
+  sex = numeric (),
+  fev05 = numeric (),
+  fev1 = numeric (),
+  fev3 = numeric (),
+  fev6 = numeric (),
+  fvc = numeric (),
+  fev1_fvc = numeric (),
+  fef2575 = numeric (),
+  fefmax = numeric (),
+  expiratory_time = numeric ()
+)
+
+X_train <- development %>% 
+  select (c (
+    "age",
+    "height",
+    "weight",
+    "sex",
+    "fev05",
+    "fev1",
+    "fev3",
+    "fev6",
+    "fvc",
+    "fev1_fvc",
+    "fef2575",
+    "fefmax",
+    "expiratory_time",
+    "restrictive")
+  ) %>% 
+  mutate (restrictive = case_when (
+    restrictive == "yes" ~ 1,
+    restrictive == "no" ~ 0)
+  ) %>% 
+  mutate (sex = case_when (
+    sex == 1 ~ 0,
+    sex == 2 ~ 1)
+  )
+
+model <- glm (
+  regression,
+  data = X_train,
+  family = "binomial"
+)
+
+bootstraps <- 1000
+
+for (i in 1:bootstraps) {
+  
+  X_train_bootstrap <- slice_sample (X_train, n = 100, replace = TRUE)
+  
+  y_train_bootstrap <- X_train_bootstrap %>% pull (restrictive)
+  
+  X_train_bootstrap <- X_train_bootstrap %>%   
+    select (
+      age,
+      height,
+      weight,
+      sex,
+      fev05,
+      fev1,
+      fev3,
+      fev6,
+      fvc,
+      fev1_fvc,
+      fef2575,
+      fefmax,
+      expiratory_time
+    )  
+
+  explainer <- shapr(X_train_bootstrap, model)
+  
+  p <- mean (y_train_bootstrap)
+
+  explanation <- explain (
+    X_train_bootstrap,
+    approach = "empirical",
+    explainer = explainer,
+    prediction_zero = p
+  )
+  
+  shapley_values_lr_bootstrap <- as_tibble (explanation$dt) 
+    
+  shapley_values_lr <- rbind (shapley_values_lr, shapley_values_lr_bootstrap)
+  
+}
+
+write_csv (shapley_values_lr, "../data/shapley_values_lr.csv")
+
+age <- shapley_values_lr %>% 
+  pull (age) %>%
+  abs () %>% 
+  mean ()
+
+height <- shapley_values_lr %>% 
+  pull (height) %>%
+  abs () %>% 
+  mean ()
+
+weight <- shapley_values_lr %>% 
+  pull (weight) %>%
+  abs () %>% 
+  mean ()
+
+sex <- shapley_values_lr %>% 
+  pull (sex) %>%
+  abs () %>% 
+  mean ()
+
+fev05 <- shapley_values_lr %>% 
+  pull (fev05) %>%
+  abs () %>% 
+  mean ()
+
+fev1 <- shapley_values_lr %>% 
+  pull (fev1) %>%
+  abs () %>% 
+  mean ()
+
+fev3 <- shapley_values_lr %>% 
+  pull (fev3) %>%
+  abs () %>% 
+  mean ()
+
+fev6 <- shapley_values_lr %>% 
+  pull (fev6) %>%
+  abs () %>% 
+  mean ()
+
+fvc <- shapley_values_lr %>% 
+  pull (fvc) %>%
+  abs () %>% 
+  mean ()
+
+fev1_fvc <- shapley_values_lr %>% 
+  pull (fev1_fvc) %>%
+  abs () %>% 
+  mean ()
+
+fef2575 <- shapley_values_lr %>% 
+  pull (fef2575) %>%
+  abs () %>% 
+  mean ()
+
+fefmax <- shapley_values_lr %>% 
+  pull (fefmax) %>%
+  abs () %>% 
+  mean ()
+
+expiratory_time <- shapley_values_lr %>% 
+  pull (expiratory_time) %>%
+  abs () %>% 
+  mean ()
+
+data <- tibble (
+  feature = c (
+    "Age",
+    "Height",
+    "Weight",
+    "Sex",
+    "FEV0.5",
+    "FEV1",
+    "FEV3",
+    "FEV6",
+    "FVC",
+    "FEV1/FVC",
+    "FEF25-75",
+    "FEFMax",
+    "Expiratory Time"
+  ),
+  mean_absolute_shapley_value = c (
+    age,
+    height,
+    weight,
+    sex,
+    fev05,
+    fev1,
+    fev3,
+    fev6,
+    fvc,
+    fev1_fvc,
+    fef2575,
+    fefmax,
+    expiratory_time
+  )
+)
+
+figure <- ggplot (data, aes (x = reorder (feature, mean_absolute_shapley_value), y = mean_absolute_shapley_value)) +
+  geom_bar (stat = 'identity', width = 0.25, color = "black", fill = "white", lwd = 2) +
+  coord_flip () +
+  theme_classic (base_size = 15) +
+  scale_x_discrete (
+    "Feature"
+  ) +
+  scale_y_continuous (
+    "Mean Absolute Value of Shapley Value",
+    limits = c (0, 0.06),
+    breaks = c (0, 0.02, 0.04),
+    labels = c ("0", "0.02", "0.04")
+  ) +
+  theme (text = element_text(family = "Helvetica")) +
+  annotate (
+    "text",
+    x = "Age",
+    y = age + 0.005,
+    label = format (round (age, 3), nsmall = 3),
+    size = 4
+  )  +
+  annotate (
+    "text",
+    x = "Height",
+    y = height + 0.005,
+    label = format (round (height, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "Weight",
+    y = weight + 0.005,
+    label = format (round (weight, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "Sex",
+    y = sex + 0.005,
+    label = format (round (sex, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FEV0.5",
+    y = fev05 + 0.005,
+    label = format (round (fev05, 3), nsmall = 3),
+    size = 4
+  ) +
+  annotate (
+    "text",
+    x = "FEV1",
+    y = fev1 + 0.005,
+    label = format (round (fev1, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FEV3",
+    y = fev3 + 0.005,
+    label = format (round (fev3, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FEV6",
+    y = fev6 + 0.005,
+    label = format (round (fev6, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FVC",
+    y = fvc + 0.005,
+    label = format (round (fvc, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FEV1/FVC",
+    y = fev1_fvc + 0.005,
+    label = format (round (fev1_fvc, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FEF25-75",
+    y = fef2575 + 0.005,
+    label = format (round (fef2575, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FEFMax",
+    y = fefmax + 0.005,
+    label = format (round (fefmax, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "Expiratory Time",
+    y = expiratory_time + 0.005,
+    label = format (round (expiratory_time, 3), nsmall = 3),
+    size = 4
+  )
+  
+
+ggsave ("../figures/figure-S5.png", width = 20, height = 30, units = "cm") 
+
+```
+
+## Figure S6 - Shapley Values for Random Forest Model
+
+```{r}
+
+shapley_values_rf <- tibble (
+  none = numeric (),
+  age = numeric (),
+  height = numeric (),
+  weight = numeric (),
+  sex = numeric (),
+  fev05 = numeric (),
+  fev1 = numeric (),
+  fev3 = numeric (),
+  fev6 = numeric (),
+  fvc = numeric (),
+  fev1_fvc = numeric (),
+  fef2575 = numeric (),
+  fefmax = numeric (),
+  expiratory_time = numeric ()
+)
+
+X_train <- development %>% 
+  select (c (
+    "age",
+    "height",
+    "weight",
+    "sex",
+    "fev05",
+    "fev1",
+    "fev3",
+    "fev6",
+    "fvc",
+    "fev1_fvc",
+    "fef2575",
+    "fefmax",
+    "expiratory_time",
+    "restrictive")
+  ) %>% 
+  mutate (restrictive = case_when (
+    restrictive == "yes" ~ 1,
+    restrictive == "no" ~ 0)
+  ) %>% 
+  mutate (sex = case_when (
+    sex == 1 ~ 0,
+    sex == 2 ~ 1)
+  )
+
+model <- ranger (
+  formula = regression,
+  data = X_train,
+  importance = "impurity",
+  min.node.size = model_rf$bestTune$min.node.size,
+  mtry = model_rf$bestTune$mtry,
+  probability = TRUE,
+  splitrule = model_rf$bestTune$splitrule
+)
+
+bootstraps <- 1000
+
+for (i in 1:bootstraps) {
+  
+  print (i)
+  
+  X_train_bootstrap <- slice_sample (X_train, n = 100, replace = TRUE)
+  
+  y_train_bootstrap <- X_train_bootstrap %>% pull (restrictive)
+  
+  X_train_bootstrap <- X_train_bootstrap %>%   
+    select (
+      age,
+      height,
+      weight,
+      sex,
+      fev05,
+      fev1,
+      fev3,
+      fev6,
+      fvc,
+      fev1_fvc,
+      fef2575,
+      fefmax,
+      expiratory_time
+    )  
+
+  explainer <- shapr(X_train_bootstrap, model)
+  
+  p <- mean (y_train_bootstrap)
+
+  explanation <- explain (
+    X_train_bootstrap,
+    approach = "empirical",
+    explainer = explainer,
+    prediction_zero = p
+  )
+  
+  shapley_values_rf_bootstrap <- as_tibble (explanation$dt) 
+    
+  shapley_values_rf <- rbind (shapley_values_rf, shapley_values_rf_bootstrap)
+  
+  rm (X_train_bootstrap)
+  rm (y_train_bootstrap)
+  rm (explained)
+  rm (p)
+  rm (explanation)
+  rm (shapley_values_rf_bootstrap)
+  
+}
+
+write_csv (shapley_values_rf, "../data/shapley_values_rf.csv")
+
+age <- shapley_values_rf %>% 
+  pull (age) %>%
+  abs () %>% 
+  mean ()
+
+height <- shapley_values_rf %>% 
+  pull (height) %>%
+  abs () %>% 
+  mean ()
+
+weight <- shapley_values_rf %>% 
+  pull (weight) %>%
+  abs () %>% 
+  mean ()
+
+sex <- shapley_values_rf %>% 
+  pull (sex) %>%
+  abs () %>% 
+  mean ()
+
+fev05 <- shapley_values_rf %>% 
+  pull (fev05) %>%
+  abs () %>% 
+  mean ()
+
+fev1 <- shapley_values_rf %>% 
+  pull (fev1) %>%
+  abs () %>% 
+  mean ()
+
+fev3 <- shapley_values_rf %>% 
+  pull (fev3) %>%
+  abs () %>% 
+  mean ()
+
+fev6 <- shapley_values_rf %>% 
+  pull (fev6) %>%
+  abs () %>% 
+  mean ()
+
+fvc <- shapley_values_rf %>% 
+  pull (fvc) %>%
+  abs () %>% 
+  mean ()
+
+fev1_fvc <- shapley_values_rf %>% 
+  pull (fev1_fvc) %>%
+  abs () %>% 
+  mean ()
+
+fef2575 <- shapley_values_rf %>% 
+  pull (fef2575) %>%
+  abs () %>% 
+  mean ()
+
+fefmax <- shapley_values_rf %>% 
+  pull (fefmax) %>%
+  abs () %>% 
+  mean ()
+
+expiratory_time <- shapley_values_rf %>% 
+  pull (expiratory_time) %>%
+  abs () %>% 
+  mean ()
+
+data <- tibble (
+  feature = c (
+    "Age",
+    "Height",
+    "Weight",
+    "Sex",
+    "FEV0.5",
+    "FEV1",
+    "FEV3",
+    "FEV6",
+    "FVC",
+    "FEV1/FVC",
+    "FEF25-75",
+    "FEFMax",
+    "Expiratory Time"
+  ),
+  mean_absolute_shapley_value = c (
+    age,
+    height,
+    weight,
+    sex,
+    fev05,
+    fev1,
+    fev3,
+    fev6,
+    fvc,
+    fev1_fvc,
+    fef2575,
+    fefmax,
+    expiratory_time
+  )
+)
+
+figure <- ggplot (data, aes (x = reorder (feature, mean_absolute_shapley_value), y = mean_absolute_shapley_value)) +
+  geom_bar (stat = 'identity', width = 0.25, color = "black", fill = "white", lwd = 2) +
+  coord_flip () +
+  theme_classic (base_size = 15) +
+  scale_x_discrete (
+    "Feature"
+  ) +
+  scale_y_continuous (
+    "Mean Absolute Value of Shapley Value",
+    limits = c (0, 0.05),
+    breaks = c (0, 0.02, 0.04),
+    labels = c ("0", "0.02", "0.04")
+  ) +
+  theme (text = element_text(family = "Helvetica")) +
+  annotate (
+    "text",
+    x = "Age",
+    y = age + 0.005,
+    label = format (round (age, 3), nsmall = 3),
+    size = 4
+  )  +
+  annotate (
+    "text",
+    x = "Height",
+    y = height + 0.005,
+    label = format (round (height, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "Weight",
+    y = weight + 0.005,
+    label = format (round (weight, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "Sex",
+    y = sex + 0.005,
+    label = format (round (sex, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FEV0.5",
+    y = fev05 + 0.005,
+    label = format (round (fev05, 3), nsmall = 3),
+    size = 4
+  ) +
+  annotate (
+    "text",
+    x = "FEV1",
+    y = fev1 + 0.005,
+    label = format (round (fev1, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FEV3",
+    y = fev3 + 0.005,
+    label = format (round (fev3, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FEV6",
+    y = fev6 + 0.005,
+    label = format (round (fev6, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FVC",
+    y = fvc + 0.005,
+    label = format (round (fvc, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FEV1/FVC",
+    y = fev1_fvc + 0.005,
+    label = format (round (fev1_fvc, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FEF25-75",
+    y = fef2575 + 0.005,
+    label = format (round (fef2575, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "FEFMax",
+    y = fefmax + 0.005,
+    label = format (round (fefmax, 3), nsmall = 3),
+    size = 4
+  )  +  
+  annotate (
+    "text",
+    x = "Expiratory Time",
+    y = expiratory_time + 0.005,
+    label = format (round (expiratory_time, 3), nsmall = 3),
+    size = 4
+  )
+  
+
+ggsave ("../figures/figure-S6.png", width = 20, height = 30, units = "cm") 
+
+```
