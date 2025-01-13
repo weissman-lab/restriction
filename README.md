@@ -15,7 +15,7 @@ Aysola, Lyle H. Ungar, Scott D. Halpern, and Gary E. Weissman.
 
 main.Rmd
 
-functions.R
+[functions.R](functions.R)
 
 [data.R](data.R)
 
