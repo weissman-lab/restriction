@@ -20,7 +20,3 @@ main.Rmd
 [data.R](data.R)
 
 [models.R](models.R)
-
-tables.R
-
-figures.R
