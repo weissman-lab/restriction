@@ -17,7 +17,7 @@ main.Rmd
 
 functions.R
 
-data.R
+[data.R](data.R)
 
 [models.R](models.R)
 
