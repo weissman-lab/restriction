@@ -13,7 +13,7 @@ Boosted Tree
 
 ## Code
 
-main.RMD
+main.Rmd
 
 functions.R
 
