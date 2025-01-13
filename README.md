@@ -13,12 +13,12 @@ Boosted Tree
 
 ## Code
 
-00_functions.R
+functions.R
 
-01_data.R
+data.R
 
-02_models.R
+models.R
 
-03_tables.R
+tables.R
 
-04_figures.R
+figures.R
