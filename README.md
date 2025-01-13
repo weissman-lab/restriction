@@ -7,7 +7,7 @@ Aysola, Lyle H. Ungar, Scott D. Halpern, and Gary E. Weissman.
 
 [Logistic Regression](model_lr.rds)
 
-Random Forest
+[Random Forest](model_rf.rds)
 
 Boosted Tree
 
