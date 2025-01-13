@@ -13,7 +13,7 @@ Aysola, Lyle H. Ungar, Scott D. Halpern, and Gary E. Weissman.
 
 ## Code
 
-main.Rmd
+[main.Rmd](main.Rmd)
 
 [functions.R](functions.R)
 
