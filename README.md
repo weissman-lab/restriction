@@ -9,7 +9,7 @@ Aysola, Lyle H. Ungar, Scott D. Halpern, and Gary E. Weissman.
 
 [Random Forest](model_rf.rds)
 
-Boosted Tree
+[Boosted Tree](model_gb.rds)
 
 ## Code
 
