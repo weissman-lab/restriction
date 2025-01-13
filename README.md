@@ -5,7 +5,7 @@ Aysola, Lyle H. Ungar, Scott D. Halpern, and Gary E. Weissman.
 
 ## Models
 
-Logistic Regression
+[Logistic Regression](model_lr.rds)
 
 Random Forest
 
