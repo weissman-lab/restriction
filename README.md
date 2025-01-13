@@ -5,7 +5,7 @@ Aysola, Lyle H. Ungar, Scott D. Halpern, and Gary E. Weissman.
 
 ## Models
 
-Logistic Regression
+[Logistic Regression](model_lr.rds)
 
 Random Forest
 
@@ -13,12 +13,14 @@ Boosted Tree
 
 ## Code
 
-00_functions.R
+main.Rmd
 
-01_data.R
+functions.R
 
-02_models.R
+data.R
 
-03_tables.R
+models.R
 
-04_figures.R
+tables.R
+
+figures.R
